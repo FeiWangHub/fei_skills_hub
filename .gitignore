@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Environment / secrets
+.env
+*.env
+.env.*
+.env.local
+!/.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.idea/
+.vscode/settings.json
+.vscode/tasks.json
+
+# Build output
+dist/
+build/
+out/
+
+# Logs
+*.log
+
+# Temp files
+*.bak
+*.tmp
+
+# Python artifacts
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Claude Code local settings
+.claude/settings.local.json
