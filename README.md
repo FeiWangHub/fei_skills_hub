@@ -39,37 +39,62 @@ Skills are **multi-step workflows** with templates and helper scripts for comple
 
 ### Installation
 
-There are two ways to install skills, depending on your setup:
+**Recommended: Clone + Run Install Script (One Command Per Platform)**
 
-#### Option A: User-Level (Available Across All Projects)
+This handles all supported tools automatically via symlinks — no manual path guessing needed.
 
-Clone to your tool's prompt directory so skills are available in every workspace.
-
-**VS Code / IntelliJ IDEA + GitHub Copilot**:
+**macOS / Linux:**
 ```bash
-# macOS
-git clone https://github.com/FeiWangHub/fei_skills_hub.git \
-  ~/Library/Application\ Support/Code/User/prompts/fei-skills
-
-# Linux
-git clone https://github.com/FeiWangHub/fei_skills_hub.git \
-  ~/.config/Code/User/prompts/fei-skills
-
-# Windows
-git clone https://github.com/FeiWangHub/fei_skills_hub.git \
-  %APPDATA%\Code\User\prompts\fei-skills
-```
-Then reload your IDE.
-
-**Claude Code**:
-```bash
-git clone https://github.com/FeiWangHub/fei_skills_hub.git \
-  ~/.claude/fei-skills
+git clone https://github.com/FeiWangHub/fei_skills_hub.git ~/fei-skills
+cd ~/fei-skills
+bash setup-for-agents.sh
 ```
 
-> After cloning, run your tool's slash command `/` to see available skills.
+**Windows (PowerShell):**
+```powershell
+git clone https://github.com/FeiWangHub/fei_skills_hub.git $HOME\fei-skills
+cd $HOME\fei-skills
+.\setup-for-agents.ps1
+```
 
-#### Option B: Workspace-Level (Per Project)
+The install script automatically creates symlinks to all detected AI coding tools on your machine. Restart your tool to see the skills.
+
+#### Install Script Options
+
+Both scripts support these flags:
+
+| Flag | Description |
+|------|-------------|
+| `--dry-run` | Preview what would be created without making changes |
+| `--force` | Overwrite existing symlinks/junctions |
+| `--vscode` | Install only for VS Code + Copilot |
+| `--claude` | Install only for Claude Code |
+| `--cursor` | Install only for Cursor |
+| `--windsurf` | Install only for Windsurf |
+| `--intellij` | Install only for IntelliJ IDEA + Copilot |
+| `--gemini` | Install only for Gemini CLI |
+| `--opencode` | Install only for OpenCode |
+
+**Examples:**
+```bash
+# Preview before installing
+bash setup-for-agents.sh --dry-run
+
+# Install only for Claude Code and VS Code
+bash setup-for-agents.sh --claude --vscode
+
+# Force reinstall (overwrite existing links)
+bash setup-for-agents.sh --force
+
+# Windows: Install only for IntelliJ
+.\setup-for-agents.ps1 -IntelliJ
+```
+
+#### Alternative: Manual Clone to Specific Tool Paths
+
+If you prefer manual installation, see [SETUP-GUIDE.md](./SETUP-GUIDE.md) for exact paths per tool.
+
+#### Workspace-Level (Per Project)
 
 Clone into your project's repo for project-specific skill usage:
 
@@ -187,7 +212,7 @@ Skills targeting Fei environments must follow these rules:
 
 ## License
 
-[Specify your license, e.g., MIT, Apache 2.0, Internal Use Only]
+See the [MIT License](./LICENSE) file for details.
 
 ---
 
