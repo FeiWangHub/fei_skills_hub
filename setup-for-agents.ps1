@@ -46,7 +46,7 @@ $PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
 
 # ── Source ──────────────────────────────────────────────────────────
 $ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$SkillsSource = Join-Path $ScriptDir '.github' 'skills'
+$SkillsSource = Join-Path $ScriptDir 'skills'
 
 if (-not (Test-Path $SkillsSource -PathType Container)) {
     Write-Host "[fail] Skills source directory not found: $SkillsSource" -ForegroundColor Red

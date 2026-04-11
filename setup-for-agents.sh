@@ -24,7 +24,7 @@ fail()  { echo -e "${RED}[fail]${NC}  $*"; }
 
 # ── Paths ───────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SKILLS_SOURCE="${SCRIPT_DIR}/.github/skills"
+SKILLS_SOURCE="${SCRIPT_DIR}/skills"
 PROMPTS_TARGET="${SKILLS_SOURCE}"  # for Copilot slash-command tools
 
 if [ ! -d "$SKILLS_SOURCE" ]; then
