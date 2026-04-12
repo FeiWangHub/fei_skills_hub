@@ -125,6 +125,7 @@ git clone https://github.com/FeiWangHub/fei_skills_hub.git skills/fei-skills
 |------|-------------|----------|
 | ui-ux-pro-max | Comprehensive design guide for web and mobile applications | `skills/frontend/ui-ux-pro-max` |
 | frontend-design | Anthropic's guide to creating distinctive, production-grade interfaces | `skills/frontend/frontend-design` |
+| remotion-best-practices | Best practices for building programmatic videos using Remotion | `skills/frontend/remotion-best-practices` |
 
 ## Repository Structure
 
