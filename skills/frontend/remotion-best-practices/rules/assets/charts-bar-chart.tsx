@@ -1,7 +1,8 @@
-import {loadFont} from '@remotion/google-fonts/Inter';
-import {AbsoluteFill, spring, useCurrentFrame, useVideoConfig} from 'remotion';
+import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 
-const {fontFamily} = loadFont();
+// Note: External font loading (e.g., @remotion/google-fonts) is disabled for internal security.
+// Using system sans-serif font instead.
+const fontFamily = 'sans-serif';
 
 const COLOR_BAR = '#D4AF37';
 const COLOR_TEXT = '#ffffff';
@@ -11,15 +12,15 @@ const COLOR_AXIS = '#333333';
 
 // Ideal composition size: 1280x720
 
-const Title: React.FC<{children: React.ReactNode}> = ({children}) => (
-	<div style={{textAlign: 'center', marginBottom: 40}}>
-		<div style={{color: COLOR_TEXT, fontSize: 48, fontWeight: 600}}>
+const Title: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+	<div style={{ textAlign: 'center', marginBottom: 40 }}>
+		<div style={{ color: COLOR_TEXT, fontSize: 48, fontWeight: 600 }}>
 			{children}
 		</div>
 	</div>
 );
 
-const YAxis: React.FC<{steps: number[]; height: number}> = ({
+const YAxis: React.FC<{ steps: number[]; height: number }> = ({
 	steps,
 	height,
 }) => (
@@ -53,7 +54,7 @@ const YAxis: React.FC<{steps: number[]; height: number}> = ({
 const Bar: React.FC<{
 	height: number;
 	progress: number;
-}> = ({height, progress}) => (
+}> = ({ height, progress }) => (
 	<div
 		style={{
 			flex: 1,
@@ -78,8 +79,8 @@ const XAxis: React.FC<{
 	children: React.ReactNode;
 	labels: string[];
 	height: number;
-}> = ({children, labels, height}) => (
-	<div style={{flex: 1, display: 'flex', flexDirection: 'column'}}>
+}> = ({ children, labels, height }) => (
+	<div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
 		<div
 			style={{
 				display: 'flex',
@@ -120,15 +121,15 @@ const XAxis: React.FC<{
 
 export const MyAnimation = () => {
 	const frame = useCurrentFrame();
-	const {fps, height} = useVideoConfig();
+	const { fps, height } = useVideoConfig();
 
 	const data = [
-		{month: 'Jan', price: 2039},
-		{month: 'Mar', price: 2160},
-		{month: 'May', price: 2327},
-		{month: 'Jul', price: 2426},
-		{month: 'Sep', price: 2634},
-		{month: 'Nov', price: 2672},
+		{ month: 'Jan', price: 2039 },
+		{ month: 'Mar', price: 2160 },
+		{ month: 'May', price: 2327 },
+		{ month: 'Jul', price: 2426 },
+		{ month: 'Sep', price: 2634 },
+		{ month: 'Nov', price: 2672 },
 	];
 
 	const minPrice = 2000;
@@ -149,14 +150,14 @@ export const MyAnimation = () => {
 		>
 			<Title>Gold Price 2024</Title>
 
-			<div style={{display: 'flex', flex: 1}}>
+			<div style={{ display: 'flex', flex: 1 }}>
 				<YAxis steps={yAxisSteps} height={chartHeight} />
 				<XAxis height={chartHeight} labels={data.map((d) => d.month)}>
 					{data.map((item, i) => {
 						const progress = spring({
 							frame: frame - i * 5 - 10,
 							fps,
-							config: {damping: 18, stiffness: 80},
+							config: { damping: 18, stiffness: 80 },
 						});
 
 						const barHeight =
