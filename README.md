@@ -118,6 +118,14 @@ git clone https://github.com/FeiWangHub/fei_skills_hub.git skills/fei-skills
 - **Browse all skills**: See the **Available Skills** section below for a complete index
 - **By domain**: Frontend, Backend, DevOps, Data, Platform, Security, AI/ML
 
+## Available Skills
+
+### Frontend
+| Name | Description | Location |
+|------|-------------|----------|
+| ui-ux-pro-max | Comprehensive design guide for web and mobile applications | `skills/frontend/ui-ux-pro-max` |
+| frontend-design | Anthropic's guide to creating distinctive, production-grade interfaces | `skills/frontend/frontend-design` |
+
 ## Repository Structure
 
 ```text
