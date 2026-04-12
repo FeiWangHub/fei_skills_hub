@@ -127,6 +127,11 @@ git clone https://github.com/FeiWangHub/fei_skills_hub.git skills/fei-skills
 | frontend-design | Anthropic's guide to creating distinctive, production-grade interfaces | `skills/frontend/frontend-design` |
 | remotion-best-practices | Best practices for building programmatic videos using Remotion | `skills/frontend/remotion-best-practices` |
 
+### Backend
+| Name | Description | Location |
+|------|-------------|----------|
+| java-springboot | Guidelines and best practices for writing high-quality Spring Boot applications | `skills/backend/java-springboot` |
+
 ## Repository Structure
 
 ```text
