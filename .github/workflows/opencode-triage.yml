@@ -1,0 +1,48 @@
+name: opencode-triage
+
+on:
+  issues:
+    types: [opened]
+  workflow_call:
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      id-token: write
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Triage issue
+        uses: anomalyco/opencode/github@latest
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENCODE_PERMISSION: '{"bash": "deny"}'
+        with:
+          model: opencode/glm-5-free
+          agent: triage
+          prompt: |
+            A new issue was just opened in this repository.
+
+            Issue: #${{ github.event.issue.number }} — ${{ github.event.issue.title }}
+
+            Use `gh issue view ${{ github.event.issue.number }}` to read the full issue body.
+
+            Your tasks:
+            1. Read the issue content carefully
+            2. Classify it as: bug, feature-request, question, documentation, or improvement
+            3. Assign the appropriate label using `gh issue edit`
+            4. If the issue is missing required information (reproduction steps, expected behavior, etc.), post a comment asking for clarification
+            5. If the issue is a duplicate, link to the original issue
+
+            Available labels for this repo: bug, feature, documentation, question, improvement, security, good first issue, help wanted
+
+            Post a single comment with your triage assessment.

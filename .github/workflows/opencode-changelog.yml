@@ -1,0 +1,54 @@
+name: opencode-changelog
+
+on:
+  workflow_dispatch:
+    inputs:
+      from_tag:
+        description: "Starting tag (exclusive). Leave empty for auto-detect previous tag."
+        required: false
+        type: string
+      to_tag:
+        description: "Ending tag (inclusive). Leave empty for current HEAD."
+        required: false
+        type: string
+  schedule:
+    - cron: "0 2 * * 1"
+
+jobs:
+  generate-changelog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Generate changelog
+        uses: anomalyco/opencode/github@latest
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENCODE_PERMISSION: '{"bash": "allow"}'
+        with:
+          model: opencode/glm-5-free
+          prompt: |
+            Generate a changelog entry for this repository.
+            From tag (exclusive): ${{ inputs.from_tag || 'auto-detect' }}
+            To tag (inclusive): ${{ inputs.to_tag || 'HEAD' }}
+
+            Steps:
+            1. Run `git tag --sort=-v:refname | head -5` to find recent tags
+            2. Determine the commit range: if no tags exist yet, use all commits; otherwise use the range between the two most recent tags
+            3. Run `git log <range> --oneline` to get the commit history
+            4. Categorize changes into: Features, Bug Fixes, Improvements, Documentation, Security
+            5. Create or update CHANGELOG.md at the repo root — prepend the new entry before existing content
+            6. Format each entry as a bullet point referencing the commit message
+            7. Create a PR with title "chore: update CHANGELOG.md" and the changes
+
+            Do NOT run any linting, formatting, or build commands. Only modify CHANGELOG.md.
