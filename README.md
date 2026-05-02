@@ -219,3 +219,6 @@ See the [MIT License](./LICENSE) file for details.
 
 The installation scripts `setup-for-agents.sh` and `setup-for-agents.ps1` are located in the root of this repository. They handle automatic symlinking/junction creation across macOS, Linux, and Windows for all supported tools. Feel free to inspect them directly if you wish to see how the paths are resolved.
 
+
+
+> **Note**: This line added to test the opencode-review workflow (v2).
