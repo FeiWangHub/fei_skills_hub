@@ -29,14 +29,24 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Configure git author
+        run: |
+          git config --global user.name "opencode-agent[bot]"
+          git config --global user.email "opencode-agent[bot]@users.noreply.github.com"
+
       - name: Generate changelog
         uses: anomalyco/opencode/github@latest
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: opencode-agent[bot]
+          GIT_AUTHOR_EMAIL: opencode-agent[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: opencode-agent[bot]
+          GIT_COMMITTER_EMAIL: opencode-agent[bot]@users.noreply.github.com
           OPENCODE_PERMISSION: '{"bash": "allow"}'
         with:
           model: opencode/minimax-m2.5-free
+          use_github_token: "true"
           prompt: |
             Generate a changelog entry for this repository.
             From tag (exclusive): ${{ inputs.from_tag || 'auto-detect' }}
