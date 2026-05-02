@@ -36,7 +36,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENCODE_PERMISSION: '{"bash": "allow"}'
         with:
-          model: opencode/glm-5-free
+          model: opencode/minimax-m2.5-free
           prompt: |
             Generate a changelog entry for this repository.
             From tag (exclusive): ${{ inputs.from_tag || 'auto-detect' }}

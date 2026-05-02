@@ -26,7 +26,7 @@ jobs:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
           OPENCODE_PERMISSION: '{"bash": "deny"}'
         with:
-          model: opencode/glm-5-free
+          model: opencode/minimax-m2.5-free
           prompt: |
             Review this pull request focusing on the changed code. Identify issues related to:
             - Code quality and best practices
