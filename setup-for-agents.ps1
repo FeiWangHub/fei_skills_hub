@@ -33,6 +33,7 @@
 param(
     [switch] $DryRun,
     [switch] $Force,
+    [switch] $AgentsHome,
     [switch] $VsCode,
     [switch] $Claude,
     [switch] $Cursor,
@@ -55,7 +56,7 @@ if (-not (Test-Path $SkillsSource -PathType Container)) {
 
 # ── Helper ──────────────────────────────────────────────────────────
 $TargetsChosen = $false
-if ($VsCode -or $Claude -or $Cursor -or $Windsurf -or $IntelliJ -or $Gemini -or $OpenCode) {
+if ($VsCode -or $Claude -or $Cursor -or $Windsurf -or $IntelliJ -or $Gemini -or $OpenCode -or $AgentsHome) {
     $TargetsChosen = $true
 }
 
@@ -63,13 +64,14 @@ function ShouldInstall { param([string] $Name)
     if (-not $TargetsChosen) { return $true }
     $flag = "--$($Name.ToLowerInvariant())"
     return switch ($Name.ToLowerInvariant()) {
-        'vscode'   { $VsCode }
-        'claude'   { $Claude }
-        'cursor'   { $Cursor }
-        'windsurf' { $Windsurf }
-        'intellij' { $IntelliJ }
-        'gemini'   { $Gemini }
-        'opencode' { $OpenCode }
+        'vscode'      { $VsCode }
+        'claude'      { $Claude }
+        'cursor'      { $Cursor }
+        'windsurf'    { $Windsurf }
+        'intellij'    { $IntelliJ }
+        'gemini'      { $Gemini }
+        'opencode'    { $OpenCode }
+        'agentshome'  { $AgentsHome }
     }
 }
 
@@ -203,6 +205,14 @@ function Install-OpenCode {
     Link-OrCreate 'OpenCode' $target
 }
 
+function Install-AgentsHome {
+    Write-Host ""
+    Write-Host "-- Local ~/.agents Directory --"
+    $homeDir = $env:USERPROFILE
+    $target = Join-Path $homeDir '.agents\skills'
+    Link-OrCreate 'Agents Home' $target
+}
+
 # ── Main ────────────────────────────────────────────────────────────
 Write-Host "========================================================"
 Write-Host "       Fei Skills Hub -- Cross-Tool Installer"
@@ -212,13 +222,14 @@ Write-Host "Source: $SkillsSource"
 if ($DryRun) { Write-Host "*** DRY RUN -- no changes will be made ***" }
 Write-Host ""
 
-if (ShouldInstall 'vscode')   { Install-VsCode }
-if (ShouldInstall 'claude')   { Install-Claude }
-if (ShouldInstall 'cursor')   { Install-Cursor }
-if (ShouldInstall 'windsurf') { Install-Windsurf }
-if (ShouldInstall 'intellij') { Install-IntelliJ }
-if (ShouldInstall 'gemini')   { Install-Gemini }
-if (ShouldInstall 'opencode') { Install-OpenCode }
+if (ShouldInstall 'vscode')      { Install-VsCode }
+if (ShouldInstall 'claude')      { Install-Claude }
+if (ShouldInstall 'cursor')      { Install-Cursor }
+if (ShouldInstall 'windsurf')    { Install-Windsurf }
+if (ShouldInstall 'intellij')    { Install-IntelliJ }
+if (ShouldInstall 'gemini')      { Install-Gemini }
+if (ShouldInstall 'opencode')    { Install-OpenCode }
+if (ShouldInstall 'agentshome')  { Install-AgentsHome }
 
 Write-Host ""
 if ($DryRun) {
