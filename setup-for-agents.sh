@@ -35,13 +35,15 @@ fi
 # ── Options ─────────────────────────────────────────────────────────
 DRY_RUN=false
 FORCE=false
+AGENTS_HOME=false
 TOOL_TARGETS=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --dry-run)  DRY_RUN=true; shift ;;
-        --force)    FORCE=true; shift ;;
-        *)          TOOL_TARGETS+=("$1"); shift ;;
+        --dry-run)      DRY_RUN=true; shift ;;
+        --force)        FORCE=true; shift ;;
+        --agents-home)  AGENTS_HOME=true; shift ;;
+        *)              TOOL_TARGETS+=("$1"); shift ;;
     esac
 done
 
@@ -236,6 +238,13 @@ setup_opencode() {
     configure_tool "OpenCode" "$target"
 }
 
+setup_agents_home() {
+    echo ""
+    echo "── Local ~/.agents Directory ──"
+    local target="$HOME/.agents/skills"
+    configure_tool "Agents Home" "$target"
+}
+
 # ── Main ────────────────────────────────────────────────────────────
 echo "╔══════════════════════════════════════════════════════════╗"
 echo "║          Fei Skills Hub — Cross-Tool Installer          ║"
@@ -252,6 +261,7 @@ HAS_FLAG "--windsurf"    && setup_windsurf
 HAS_FLAG "--intellij"    && setup_intellij
 HAS_FLAG "--gemini"      && setup_gemini
 HAS_FLAG "--opencode"    && setup_opencode
+$AGENTS_HOME             && setup_agents_home
 
 echo ""
 # Portable: avoid realpath which isn't available on Windows Git Bash
