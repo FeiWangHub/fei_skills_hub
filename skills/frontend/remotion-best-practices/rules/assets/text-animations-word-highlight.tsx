@@ -1,9 +1,6 @@
+import {loadFont} from '@remotion/google-fonts/Inter';
 import React from 'react';
 import {AbsoluteFill, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-
-// Note: External font loading (e.g., @remotion/google-fonts) is disabled for internal security.
-// Using system sans-serif font instead.
-const fontFamily = 'sans-serif';
 
 /*
  * Highlight a word in a sentence with a spring-animated wipe effect.
@@ -20,6 +17,8 @@ const FONT_SIZE = 72;
 const FONT_WEIGHT = 700;
 const HIGHLIGHT_START_FRAME = 30;
 const HIGHLIGHT_WIPE_DURATION = 18;
+
+const {fontFamily} = loadFont();
 
 const Highlight: React.FC<{
 	word: string;
