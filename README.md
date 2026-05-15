@@ -120,17 +120,26 @@ git clone https://github.com/FeiWangHub/fei_skills_hub.git skills/fei-skills
 
 ## Available Skills
 
-### Frontend
 | Name | Description | Location |
 |------|-------------|----------|
+| api-design-principles | Master REST and GraphQL API design principles to build intuitive, scalable, and maintainable APIs that delight developers. Use when designing new APIs, reviewing API specifications, or establishing API design standards. | `skills/tooling/api-design-principles` |
+| backend-development | Backend API design, database architecture, microservices patterns, and test-driven development. Use for designing APIs, database schemas, or backend system architecture. | `skills/backend/nodejs-backend-patterns` |
+| browser-use | Automates browser interactions for web testing, form filling, screenshots, and data extraction. Use when the user needs to navigate websites, interact with web pages, fill forms, take screenshots, or extract information from web pages. | `skills/automation/browser-use` |
+| cost-optimization | Optimize cloud costs across AWS, Azure, GCP, and OCI through resource rightsizing, tagging strategies, reserved instances, and spending analysis. Use when reducing cloud expenses, analyzing infrastructure costs, or implementing cost governance policies. | `skills/cloud/cost-optimization` |
+| docx | Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of 'Word doc', 'word document', '.docx', or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx files, inserting or replacing images in documents, performing find-and-replace in Word files, working with tracked changes or comments, or converting content into a polished Word document. If the user asks for a 'report', 'memo', 'letter', 'template', or similar deliverable as a Word or .docx file, use this skill. Do NOT use for PDFs, spreadsheets, Google Docs, or general coding tasks unrelated to document generation. | `skills/documents/docx` |
+| fastapi-templates | Create production-ready FastAPI projects with async patterns, dependency injection, and comprehensive error handling. Use when building new FastAPI applications or setting up backend API projects. | `skills/backend/fastapi-templates` |
+| find-skills | Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that can...", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill. | `skills/tooling/find-skills` |
+| frontend-design | Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics. | `skills/frontend/frontend-design` |
+| github-copilot-starter | 'Set up complete GitHub Copilot configuration for a new project based on technology stack' | `skills/tooling/github-copilot-starter` |
+| java-springboot | Guidelines and best practices for writing high-quality Spring Boot applications. Covers project structure, dependency injection, configuration, security, and testing. | `skills/backend/java-springboot` |
+| pdf | Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, encrypting/decrypting PDFs, extracting images, and OCR on scanned PDFs to make them searchable. If the user mentions a .pdf file or asks to produce one, use this skill. | `skills/documents/pdf` |
+| pptx | Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx file (even if the extracted content will be used elsewhere, like in an email or summary); editing, modifying, or updating existing presentations; combining or splitting slide files; working with templates, layouts, speaker notes, or comments. Trigger whenever the user mentions "deck," "slides," "presentation," or references a .pptx filename, regardless of what they plan to do with the content afterward. If a .pptx file needs to be opened, created, or touched, use this skill. | `skills/documents/pptx` |
+| python-performance-optimization | Profile and optimize Python code using cProfile, memory profilers, and performance best practices. Use when debugging slow Python code, optimizing bottlenecks, or improving application performance. | `skills/languages/python-performance-optimization` |
+| remotion-best-practices | Best practices for Remotion - Video creation in React | `skills/frontend/remotion-best-practices` |
+| skill-creator | Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy. | `skills/tooling/skill-creator` |
+| supabase-postgres-best-practices | Postgres performance optimization and best practices from Supabase. Use this skill when writing, reviewing, or optimizing Postgres queries, schema designs, or database configurations. | `skills/backend/supabase-postgres-best-practices` |
+| tailwind-design-system | Build scalable design systems with Tailwind CSS v4, design tokens, component libraries, and responsive patterns. Use when creating component libraries, implementing design systems, or standardizing UI patterns. | `skills/frontend/tailwind-design-system` |
 | ui-ux-pro-max | Comprehensive design guide for web and mobile applications | `skills/frontend/ui-ux-pro-max` |
-| frontend-design | Anthropic's guide to creating distinctive, production-grade interfaces | `skills/frontend/frontend-design` |
-| remotion-best-practices | Best practices for building programmatic videos using Remotion | `skills/frontend/remotion-best-practices` |
-
-### Backend
-| Name | Description | Location |
-|------|-------------|----------|
-| java-springboot | Guidelines and best practices for writing high-quality Spring Boot applications | `skills/backend/java-springboot` |
 
 ## Repository Structure
 
