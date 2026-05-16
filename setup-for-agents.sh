@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 # Fei Skills Hub — Cross-tool installer
 #
-# This script symlinks or copies skills directories to the prompt locations
+# This script symlinks skills directories to the prompt locations
 # of all supported tools on the current machine. It is safe to re-run (idempotent).
 #
-# Usage:  bash setup-for-agents.sh                    # auto-detect tools
-#         bash setup-for-agents.sh --vscode --claude  # only these targets
+# By default, installs to the cross-platform ~/.agents/skills/ directory
+# which is natively supported by Claude Code, Codebuff, OpenCode, and other tools.
+#
+# Usage:  bash setup-for-agents.sh                    # default: install to ~/.agents/skills/
+#         bash setup-for-agents.sh --all               # install to all detected tools
+#         bash setup-for-agents.sh --claude --cursor   # install to specific tools
 #         bash setup-for-agents.sh --dry-run          # show what would happen
 
 set -euo pipefail
@@ -35,21 +39,35 @@ fi
 # ── Options ─────────────────────────────────────────────────────────
 DRY_RUN=false
 FORCE=false
-AGENTS_HOME=false
+AGENTS_HOME=true
+INSTALL_ALL=false
 TOOL_TARGETS=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --dry-run)      DRY_RUN=true; shift ;;
         --force)        FORCE=true; shift ;;
-        --agents-home)  AGENTS_HOME=true; shift ;;
+        --all)          INSTALL_ALL=true; shift ;;
+        --claude)       TOOL_TARGETS+=("claude"); shift ;;
+        --cursor)       TOOL_TARGETS+=("cursor"); shift ;;
+        --vscode)       TOOL_TARGETS+=("vscode"); shift ;;
+        --windsurf)     TOOL_TARGETS+=("windsurf"); shift ;;
+        --intellij)     TOOL_TARGETS+=("intellij"); shift ;;
+        --gemini)       TOOL_TARGETS+=("gemini"); shift ;;
+        --opencode)     TOOL_TARGETS+=("opencode"); shift ;;
+        --agents-home)  TOOL_TARGETS+=("agents-home"); shift ;;
         *)              TOOL_TARGETS+=("$1"); shift ;;
     esac
 done
 
 HAS_FLAG() {
     local flag="$1"
-    if [ ${#TOOL_TARGETS[@]} -eq 0 ]; then return 0; fi
+    if [ ${#TOOL_TARGETS[@]} -eq 0 ] && ! $INSTALL_ALL; then
+        # Default: only agents-home
+        [ "$flag" = "agents-home" ] && return 0
+        return 1
+    fi
+    if $INSTALL_ALL; then return 0; fi
     for t in "${TOOL_TARGETS[@]}"; do [[ "$t" == "$flag" ]] && return 0; done
     return 1
 }
