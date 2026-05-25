@@ -37,25 +37,59 @@ Skills are **multi-step workflows** with templates and helper scripts for comple
 | Gemini CLI | Workspace-local config | Similar slash command patterns |
 | Windsurf / Cursor | IDE settings or workspace config | May require manual prompt import |
 
+## The `.agents` Protocol Environment
+
+This project fully embraces the open [.agents Protocol](https://dotagentsprotocol.com/), serving as a centralized, tool-agnostic configuration hub for all your AI agents.
+
+By using our initialization scripts (`init-agents-home.sh` or `init-agents-home.ps1`), you can instantly scaffold a standard `~/.agents` directory structure on your local machine:
+
+```text
+~/.agents/
+├── agents.md            # global agent instructions
+├── system-prompt.md     # system prompt template
+├── mcp.json             # MCP server configuration
+├── models.json          # model presets & provider keys
+├── skills/              # codified procedural knowledge (linked from this repo)
+├── agents/              # sub-agent profiles
+├── tasks/               # scheduled repeat tasks
+└── memories/            # persistent memory
+```
+
+This layout ensures your skills, sub-agents, tasks, and memories are portable and instantly available to any compatible AI IDE or CLI (like Claude Code, Cursor, OpenCode, etc.).
+
 ## Quick Start
 
-### Installation
+### 1. Initialize `~/.agents` (Optional but Recommended)
 
-**Recommended: Clone + Run Install Script (One Command Per Platform)**
-
-This handles all supported tools automatically via symlinks — no manual path guessing needed.
+If you haven't set up a `~/.agents` directory yet, you can run the initialization script after cloning:
 
 **macOS / Linux:**
 ```bash
 git clone https://github.com/FeiWangHub/fei_skills_hub.git ~/fei-skills
 cd ~/fei-skills
-bash setup-for-agents.sh
+bash init-agents-home.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
 git clone https://github.com/FeiWangHub/fei_skills_hub.git $HOME\fei-skills
 cd $HOME\fei-skills
+.\init-agents-home.ps1
+```
+
+### 2. Install Skills
+
+**Recommended: Run Install Script (One Command Per Platform)**
+
+This handles all supported tools automatically via symlinks — no manual path guessing needed.
+
+**macOS / Linux:**
+```bash
+bash setup-for-agents.sh
+```
+
+**Windows (PowerShell):**
+```powershell
 .\setup-for-agents.ps1
 ```
 
@@ -226,7 +260,7 @@ See the [MIT License](./LICENSE) file for details.
 
 ---
 
-## Appendix: Install Script Source Code
+## Appendix: Script Source Code
 
-The installation scripts `setup-for-agents.sh` and `setup-for-agents.ps1` are located in the root of this repository. They handle automatic symlinking/junction creation across macOS, Linux, and Windows for all supported tools. Feel free to inspect them directly if you wish to see how the paths are resolved.
+The initialization scripts (`init-agents-home.sh` and `init-agents-home.ps1`) and the installation scripts (`setup-for-agents.sh` and `setup-for-agents.ps1`) are located in the root of this repository. They handle automatic scaffolding of the `.agents Protocol` directory structure and symlinking/junction creation across macOS, Linux, and Windows for all supported tools. Feel free to inspect them directly if you wish to see how the paths and structures are resolved.
 
