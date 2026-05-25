@@ -2,7 +2,7 @@
 # Fei Skills Hub — Initialize ~/.agents directory structure
 #
 # This script creates the directory structure for ~/.agents,
-# which is used as a local hub for agent skills and configurations.
+# following the .agents Protocol (https://dotagentsprotocol.com/).
 #
 # Usage:  bash init-agents-home.sh                  # interactive mode
 #         bash init-agents-home.sh --auto           # auto-create all
@@ -25,9 +25,9 @@ fail()  { echo -e "${RED}[fail]${NC}  $*"; }
 # ── Paths ───────────────────────────────────────────────────────────
 AGENTS_HOME="${HOME}/.agents"
 SKILLS_DIR="${AGENTS_HOME}/skills"
-CONFIG_DIR="${AGENTS_HOME}/config"
-CACHE_DIR="${AGENTS_HOME}/cache"
-DATA_DIR="${AGENTS_HOME}/data"
+AGENTS_DIR="${AGENTS_HOME}/agents"
+TASKS_DIR="${AGENTS_HOME}/tasks"
+MEMORIES_DIR="${AGENTS_HOME}/memories"
 
 # ── Options ─────────────────────────────────────────────────────────
 DRY_RUN=false
@@ -80,17 +80,17 @@ create_file() {
 # ── Directory Structure ─────────────────────────────────────────────
 create_structure() {
     echo ""
-    echo "Creating ~/.agents directory structure..."
+    echo "Creating ~/.agents directory structure (.agents Protocol)..."
     echo ""
 
     # Main directories
     create_dir "$AGENTS_HOME" "Agents home directory"
     create_dir "$SKILLS_DIR" "Skills directory"
-    create_dir "$CONFIG_DIR" "Configuration directory"
-    create_dir "$CACHE_DIR" "Cache directory"
-    create_dir "$DATA_DIR" "Data directory"
+    create_dir "$AGENTS_DIR" "Sub-agents directory"
+    create_dir "$TASKS_DIR" "Tasks directory"
+    create_dir "$MEMORIES_DIR" "Memories directory"
 
-    # Skills subdirectories (organized by domain)
+    # Skills subdirectories (organized by domain - optional but useful)
     create_dir "$SKILLS_DIR/frontend" "Frontend skills"
     create_dir "$SKILLS_DIR/backend" "Backend skills"
     create_dir "$SKILLS_DIR/devops" "DevOps skills"
@@ -100,56 +100,61 @@ create_structure() {
     create_dir "$SKILLS_DIR/ai" "AI skills"
     create_dir "$SKILLS_DIR/mobile" "Mobile skills"
     create_dir "$SKILLS_DIR/infrastructure" "Infrastructure skills"
-
-    # Config subdirectories
-    create_dir "$CONFIG_DIR/agents" "Agent configurations"
-    create_dir "$CONFIG_DIR/tools" "Tool configurations"
-
-    # Cache subdirectories
-    create_dir "$CACHE_DIR/search" "Search cache"
-    create_dir "$CACHE_DIR/analysis" "Analysis cache"
-
-    # Data subdirectories
-    create_dir "$DATA_DIR/logs" "Log files"
-    create_dir "$DATA_DIR/projects" "Project metadata"
 }
 
-# ── README Files ────────────────────────────────────────────────────
-create_readme_files() {
+# ── Protocol Files ──────────────────────────────────────────────────
+create_protocol_files() {
     echo ""
-    echo "Creating README files..."
+    echo "Creating .agents Protocol files..."
     echo ""
+
+    # agents.md
+    create_file "$AGENTS_HOME/agents.md" \
+'# Agent Instructions
+
+This file contains global instructions and conventions for your AI agents.
+It is compatible with the AGENTS.md standard.
+
+## Conventions
+- Write clean, self-documenting code.
+- Think step-by-step before making changes.
+' "agents.md"
+
+    # system-prompt.md
+    create_file "$AGENTS_HOME/system-prompt.md" \
+'You are an expert AI assistant.
+Follow the instructions in agents.md and utilize available tools in mcp.json.
+Use the skills provided in the skills/ directory to accomplish tasks efficiently.
+' "system-prompt.md"
+
+    # mcp.json
+    create_file "$AGENTS_HOME/mcp.json" \
+'{
+  "mcpServers": {}
+}' "mcp.json"
+
+    # models.json
+    create_file "$AGENTS_HOME/models.json" \
+'{
+  "models": []
+}' "models.json"
 
     # Root README
     create_file "$AGENTS_HOME/README.md" \
 '# ~/.agents Directory
 
-This directory serves as your local hub for AI agent skills, configurations, and data.
+This directory serves as your local hub for AI agent configuration, following the [.agents Protocol](https://dotagentsprotocol.com/).
 
 ## Structure
 
-- **skills/** - Agent skills organized by domain
-  - frontend/ - Frontend development skills
-  - backend/ - Backend development skills
-  - devops/ - DevOps and infrastructure skills
-  - data/ - Data science and analytics skills
-  - platform/ - Platform and architecture skills
-  - security/ - Security and compliance skills
-  - ai/ - AI/ML specific skills
-  - mobile/ - Mobile development skills
-  - infrastructure/ - Infrastructure skills
-
-- **config/** - Configuration files for agents and tools
-  - agents/ - Agent-specific configurations
-  - tools/ - Tool-specific configurations
-
-- **cache/** - Temporary cache data (can be safely deleted)
-  - search/ - Search operation cache
-  - analysis/ - Analysis operation cache
-
-- **data/** - Persistent data and metadata
-  - logs/ - Operation logs
-  - projects/ - Project-specific metadata
+- `agents.md`            # instructions (AGENTS.md compatible)
+- `system-prompt.md`     # system prompt
+- `mcp.json`             # MCP server configuration
+- `models.json`          # model presets & provider keys
+- `skills/`              # codified procedural knowledge
+- `agents/`              # sub-agent profiles
+- `tasks/`               # scheduled repeat tasks
+- `memories/`            # persistent memory
 
 ## Usage
 
@@ -158,79 +163,8 @@ This directory serves as your local hub for AI agent skills, configurations, and
    bash setup-for-agents.sh --agents-home
    ```
 
-2. Install skills into specific domains:
-   ```bash
-   # Frontend skills will appear in ./skills/frontend/
-   # Backend skills will appear in ./skills/backend/
-   # etc.
-   ```
-
-3. Configure tools to use ~/.agents as their skill root
-
-## Tips
-
-- Keep config files as YAML or JSON for easy parsing
-- Log important operations in data/logs/
-- Clear cache/ periodically to save disk space
-- Version control: Consider committing config/ but not cache/
-
----
-
-Created by: Fei Skills Hub Initializer
+2. Configure your AI tools (Claude Code, Cursor, Windsurf, etc.) to use these skills and settings.
 ' "Main README"
-
-    # Skills README
-    create_file "$SKILLS_DIR/README.md" \
-'# Skills Directory
-
-This directory contains agent skills organized by domain.
-
-## Domains
-
-- **frontend/** - React, Vue, Svelte, UI/UX design patterns
-- **backend/** - Java, Python, Node.js, architecture patterns
-- **devops/** - Docker, Kubernetes, CI/CD, IaC
-- **data/** - Data processing, analytics, ML models
-- **platform/** - System design, scalability, performance
-- **security/** - Security best practices, compliance
-- **ai/** - LLM patterns, prompt engineering, agents
-- **mobile/** - iOS, Android, React Native, Flutter
-- **infrastructure/** - Cloud platforms, networking
-
-## Adding Skills
-
-1. Create a subdirectory for your skill: `mkdir -p frontend/my-skill`
-2. Add a SKILL.md or README.md with documentation
-3. Include templates and scripts as needed
-
----
-
-Skills are typically symlinked or copied from Fei Skills Hub.
-' "Skills README"
-
-    # Config README
-    create_file "$CONFIG_DIR/README.md" \
-'# Configuration Directory
-
-Store agent and tool configurations here.
-
-## agents/
-
-Tool-specific agent configurations:
-- copilot.yaml - GitHub Copilot settings
-- claude.yaml - Claude configuration
-- cursor.yaml - Cursor AI settings
-
-## tools/
-
-Configurations for various tools:
-- vs-code.json - VS Code preferences
-- extensions.json - VS Code extensions list
-
----
-
-Configuration files are typically in YAML or JSON format.
-' "Config README"
 }
 
 # ── .gitignore ─────────────────────────────────────────────────────
@@ -240,55 +174,19 @@ create_gitignore() {
     echo ""
 
     create_file "$AGENTS_HOME/.gitignore" \
-'# Cache (regenerated)
-cache/
-*.cache
-
-# Logs (sensitive information)
-data/logs/
+'# OS-specific
+.DS_Store
+Thumbs.db
 
 # IDE-specific
-.DS_Store
 .vscode/
 .idea/
 
 # Temporary files
 *.tmp
 *.swp
-*.swo
 *~
-
-# OS-specific
-Thumbs.db
 ' "Gitignore file"
-}
-
-# ── Environment Config ──────────────────────────────────────────────
-create_env_config() {
-    echo ""
-    echo "Creating environment configuration..."
-    echo ""
-
-    create_file "$CONFIG_DIR/.env.example" \
-'# Fei Skills Hub — Local Agent Configuration
-
-# Set to true to enable debug logging
-DEBUG=false
-
-# Skills root directory
-SKILLS_ROOT=${HOME}/.agents/skills
-
-# Log level (debug, info, warn, error)
-LOG_LEVEL=info
-
-# Cache settings
-CACHE_ENABLED=true
-CACHE_TTL=3600
-
-# Add custom paths as needed
-CUSTOM_SKILLS_PATH=
-
-' "Environment example"
 }
 
 # ── Summary ─────────────────────────────────────────────────────────
@@ -300,10 +198,15 @@ show_summary() {
     echo ""
     echo "Location: ${AGENTS_HOME}"
     echo ""
+    echo "Created following the .agents Protocol standards:"
+    echo "  - mcp.json & models.json"
+    echo "  - agents.md & system-prompt.md"
+    echo "  - skills/, agents/, tasks/, memories/ directories"
+    echo ""
     echo "Next steps:"
     echo "  1. Link skills: bash setup-for-agents.sh --agents-home"
-    echo "  2. Configure tools to use: ${AGENTS_HOME}/skills"
-    echo "  3. Add custom configurations in: ${CONFIG_DIR}/"
+    echo "  2. Update your MCP servers in ${AGENTS_HOME}/mcp.json"
+    echo "  3. Add persistent context in ${AGENTS_HOME}/memories/"
     echo ""
     echo "Documentation: ${AGENTS_HOME}/README.md"
     echo ""
@@ -335,9 +238,8 @@ main() {
 
     # Create everything
     create_structure
-    create_readme_files
+    create_protocol_files
     create_gitignore
-    create_env_config
 
     if $DRY_RUN; then
         info "Dry run complete. Run without --dry-run to actually initialize."
