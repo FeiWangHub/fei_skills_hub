@@ -41,15 +41,15 @@ Skills are **multi-step workflows** with templates and helper scripts for comple
 
 This project fully embraces the open [.agents Protocol](https://dotagentsprotocol.com/), serving as a centralized, tool-agnostic configuration hub for all your AI agents.
 
-By using our initialization scripts (`init-agents-home.sh` or `init-agents-home.ps1`), you can instantly scaffold a standard `~/.agents` directory structure on your local machine:
+By using our initialization scripts (`init-dot-agents.sh` or `init-dot-agents.ps1`), you can scaffold a standard `.agents` directory structure in your repo (and optionally link it to `~/.agents`):
 
 ```text
-~/.agents/
+.agents/
 ├── agents.md            # global agent instructions
 ├── system-prompt.md     # system prompt template
 ├── mcp.json             # MCP server configuration
 ├── models.json          # model presets & provider keys
-├── skills/              # codified procedural knowledge (linked from this repo)
+├── skills/              # codified procedural knowledge
 ├── agents/              # sub-agent profiles
 ├── tasks/               # scheduled repeat tasks
 └── memories/            # persistent memory
@@ -59,86 +59,34 @@ This layout ensures your skills, sub-agents, tasks, and memories are portable an
 
 ## Quick Start
 
-### 1. Initialize `~/.agents` (Optional but Recommended)
+### 1. Create or Update `./.agents` (Recommended)
 
-If you haven't set up a `~/.agents` directory yet, you can run the initialization script after cloning:
+This repo includes a `.agents` directory. Run the initializer to update it (or fill in missing pieces):
 
 **macOS / Linux:**
 ```bash
 git clone https://github.com/FeiWangHub/fei_skills_hub.git ~/fei-skills
 cd ~/fei-skills
-bash init-agents-home.sh
+bash init-dot-agents.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
 git clone https://github.com/FeiWangHub/fei_skills_hub.git $HOME\fei-skills
 cd $HOME\fei-skills
-.\init-agents-home.ps1
+.\init-dot-agents.ps1
 ```
 
-### 2. Install Skills
-
-**Recommended: Run Install Script (One Command Per Platform)**
-
-This handles all supported tools automatically via symlinks — no manual path guessing needed.
+### 2. Use as Your Global `~/.agents` (Optional)
 
 **macOS / Linux:**
 ```bash
-bash setup-for-agents.sh
+ln -s "$PWD/.agents" "$HOME/.agents"
 ```
 
 **Windows (PowerShell):**
 ```powershell
-.\setup-for-agents.ps1
-```
-
-The install script automatically creates symlinks to all detected AI coding tools on your machine. Restart your tool to see the skills.
-
-#### Install Script Options
-
-Both scripts support these flags:
-
-| Flag | Description |
-|------|-------------|
-| `--dry-run` | Preview what would be created without making changes |
-| `--force` | Overwrite existing symlinks/junctions |
-| `--vscode` | Install only for VS Code + Copilot |
-| `--claude` | Install only for Claude Code |
-| `--cursor` | Install only for Cursor |
-| `--windsurf` | Install only for Windsurf |
-| `--intellij` | Install only for IntelliJ IDEA + Copilot |
-| `--gemini` | Install only for Gemini CLI |
-| `--opencode` | Install only for OpenCode |
-
-**Examples:**
-```bash
-# Preview before installing
-bash setup-for-agents.sh --dry-run
-
-# Install only for Claude Code and VS Code
-bash setup-for-agents.sh --claude --vscode
-
-# Force reinstall (overwrite existing links)
-bash setup-for-agents.sh --force
-
-# Windows: Install only for IntelliJ
-.\setup-for-agents.ps1 -IntelliJ
-```
-
-#### Alternative: Manual Clone to Specific Tool Paths
-
-If you prefer manual installation, see [SETUP-GUIDE.md](./SETUP-GUIDE.md) for exact paths per tool.
-
-#### Workspace-Level (Per Project)
-
-Clone into your project's repo for project-specific skill usage:
-
-```bash
-cd your-project-repo/
-git submodule add https://github.com/FeiWangHub/fei_skills_hub.git skills/fei-skills
-# OR without submodules:
-git clone https://github.com/FeiWangHub/fei_skills_hub.git skills/fei-skills
+New-Item -ItemType Junction -Path "$HOME\.agents" -Target "$PWD\.agents"
 ```
 
 ### Using a Skill
@@ -156,44 +104,49 @@ git clone https://github.com/FeiWangHub/fei_skills_hub.git skills/fei-skills
 
 | Name | Description | Location |
 |------|-------------|----------|
-| api-design-principles | Master REST and GraphQL API design principles to build intuitive, scalable, and maintainable APIs that delight developers. Use when designing new APIs, reviewing API specifications, or establishing API design standards. | `skills/tooling/api-design-principles` |
-| nodejs-backend-patterns | Build production-ready Node.js backend services with Express/Fastify, implementing middleware patterns, error handling, authentication, database integration, and API design best practices. Use when creating Node.js servers, REST APIs, GraphQL backends, or microservices architectures. | `skills/backend/nodejs-backend-patterns` |
-| openapi-spec-generation | Generate and maintain OpenAPI 3.1 specifications from code, design-first specs, and validation patterns. Use when creating API documentation, generating SDKs, or ensuring API contract compliance. | `skills/documentation/openapi-spec-generation` |
-| browser-use | Automates browser interactions for web testing, form filling, screenshots, and data extraction. Use when the user needs to navigate websites, interact with web pages, fill forms, take screenshots, or extract information from web pages. | `skills/automation/browser-use` |
-| cost-optimization | Optimize cloud costs across AWS, Azure, GCP, and OCI through resource rightsizing, tagging strategies, reserved instances, and spending analysis. Use when reducing cloud expenses, analyzing infrastructure costs, or implementing cost governance policies. | `skills/cloud/cost-optimization` |
-| dependency-upgrade | Manage major dependency version upgrades with compatibility analysis, staged rollout, and comprehensive testing. Use when upgrading framework versions, updating major dependencies, or managing breaking changes in libraries. | `skills/tooling/dependency-upgrade` |
-| docx | Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of 'Word doc', 'word document', '.docx', or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx files, inserting or replacing images in documents, performing find-and-replace in Word files, working with tracked changes or comments, or converting content into a polished Word document. If the user asks for a 'report', 'memo', 'letter', 'template', or similar deliverable as a Word or .docx file, use this skill. Do NOT use for PDFs, spreadsheets, Google Docs, or general coding tasks unrelated to document generation. | `skills/documents/docx` |
-| fastapi-templates | Create production-ready FastAPI projects with async patterns, dependency injection, and comprehensive error handling. Use when building new FastAPI applications or setting up backend API projects. | `skills/backend/fastapi-templates` |
-| find-skills | Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that can...", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill. | `skills/tooling/find-skills` |
-| frontend-design | Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics. | `skills/frontend/frontend-design` |
-| github-copilot-starter | 'Set up complete GitHub Copilot configuration for a new project based on technology stack' | `skills/tooling/github-copilot-starter` |
-| java-springboot | Guidelines and best practices for writing high-quality Spring Boot applications. Covers project structure, dependency injection, configuration, security, and testing. | `skills/backend/java-springboot` |
-| pdf | Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, encrypting/decrypting PDFs, extracting images, and OCR on scanned PDFs to make them searchable. If the user mentions a .pdf file or asks to produce one, use this skill. | `skills/documents/pdf` |
-| pptx | Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx file (even if the extracted content will be used elsewhere, like in an email or summary); editing, modifying, or updating existing presentations; combining or splitting slide files; working with templates, layouts, speaker notes, or comments. Trigger whenever the user mentions "deck," "slides," "presentation," or references a .pptx filename, regardless of what they plan to do with the content afterward. If a .pptx file needs to be opened, created, or touched, use this skill. | `skills/documents/pptx` |
-| python-performance-optimization | Profile and optimize Python code using cProfile, memory profilers, and performance best practices. Use when debugging slow Python code, optimizing bottlenecks, or improving application performance. | `skills/languages/python-performance-optimization` |
-| remotion-best-practices | Best practices for Remotion - Video creation in React | `skills/frontend/remotion-best-practices` |
-| skill-creator | Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy. | `skills/tooling/skill-creator` |
-| supabase-postgres-best-practices | Postgres performance optimization and best practices from Supabase. Use this skill when writing, reviewing, or optimizing Postgres queries, schema designs, or database configurations. | `skills/backend/supabase-postgres-best-practices` |
-| tailwind-design-system | Build scalable design systems with Tailwind CSS v4, design tokens, component libraries, and responsive patterns. Use when creating component libraries, implementing design systems, or standardizing UI patterns. | `skills/frontend/tailwind-design-system` |
-| ui-ux-pro-max | Comprehensive design guide for web and mobile applications | `skills/frontend/ui-ux-pro-max` |
+| api-design-principles | Master REST and GraphQL API design principles to build intuitive, scalable, and maintainable APIs that delight developers. Use when designing new APIs, reviewing API specifications, or establishing API design standards. | `.agents/skills/tooling/api-design-principles` |
+| nodejs-backend-patterns | Build production-ready Node.js backend services with Express/Fastify, implementing middleware patterns, error handling, authentication, database integration, and API design best practices. Use when creating Node.js servers, REST APIs, GraphQL backends, or microservices architectures. | `.agents/skills/backend/nodejs-backend-patterns` |
+| openapi-spec-generation | Generate and maintain OpenAPI 3.1 specifications from code, design-first specs, and validation patterns. Use when creating API documentation, generating SDKs, or ensuring API contract compliance. | `.agents/skills/documentation/openapi-spec-generation` |
+| browser-use | Automates browser interactions for web testing, form filling, screenshots, and data extraction. Use when the user needs to navigate websites, interact with web pages, fill forms, take screenshots, or extract information from web pages. | `.agents/skills/automation/browser-use` |
+| cost-optimization | Optimize cloud costs across AWS, Azure, GCP, and OCI through resource rightsizing, tagging strategies, reserved instances, and spending analysis. Use when reducing cloud expenses, analyzing infrastructure costs, or implementing cost governance policies. | `.agents/skills/cloud/cost-optimization` |
+| dependency-upgrade | Manage major dependency version upgrades with compatibility analysis, staged rollout, and comprehensive testing. Use when upgrading framework versions, updating major dependencies, or managing breaking changes in libraries. | `.agents/skills/tooling/dependency-upgrade` |
+| docx | Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of 'Word doc', 'word document', '.docx', or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx files, inserting or replacing images in documents, performing find-and-replace in Word files, working with tracked changes or comments, or converting content into a polished Word document. If the user asks for a 'report', 'memo', 'letter', 'template', or similar deliverable as a Word or .docx file, use this skill. Do NOT use for PDFs, spreadsheets, Google Docs, or general coding tasks unrelated to document generation. | `.agents/skills/documents/docx` |
+| fastapi-templates | Create production-ready FastAPI projects with async patterns, dependency injection, and comprehensive error handling. Use when building new FastAPI applications or setting up backend API projects. | `.agents/skills/backend/fastapi-templates` |
+| find-skills | Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that can...", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill. | `.agents/skills/tooling/find-skills` |
+| frontend-design | Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics. | `.agents/skills/frontend/frontend-design` |
+| github-copilot-starter | 'Set up complete GitHub Copilot configuration for a new project based on technology stack' | `.agents/skills/tooling/github-copilot-starter` |
+| java-springboot | Guidelines and best practices for writing high-quality Spring Boot applications. Covers project structure, dependency injection, configuration, security, and testing. | `.agents/skills/backend/java-springboot` |
+| pdf | Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, encrypting/decrypting PDFs, extracting images, and OCR on scanned PDFs to make them searchable. If the user mentions a .pdf file or asks to produce one, use this skill. | `.agents/skills/documents/pdf` |
+| pptx | Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx file (even if the extracted content will be used elsewhere, like in an email or summary); editing, modifying, or updating existing presentations; combining or splitting slide files; working with templates, layouts, speaker notes, or comments. Trigger whenever the user mentions "deck," "slides," "presentation," or references a .pptx filename, regardless of what they plan to do with the content afterward. If a .pptx file needs to be opened, created, or touched, use this skill. | `.agents/skills/documents/pptx` |
+| python-performance-optimization | Profile and optimize Python code using cProfile, memory profilers, and performance best practices. Use when debugging slow Python code, optimizing bottlenecks, or improving application performance. | `.agents/skills/languages/python-performance-optimization` |
+| remotion-best-practices | Best practices for Remotion - Video creation in React | `.agents/skills/frontend/remotion-best-practices` |
+| skill-creator | Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy. | `.agents/skills/tooling/skill-creator` |
+| supabase-postgres-best-practices | Postgres performance optimization and best practices from Supabase. Use this skill when writing, reviewing, or optimizing Postgres queries, schema designs, or database configurations. | `.agents/skills/backend/supabase-postgres-best-practices` |
+| tailwind-design-system | Build scalable design systems with Tailwind CSS v4, design tokens, component libraries, and responsive patterns. Use when creating component libraries, implementing design systems, or standardizing UI patterns. | `.agents/skills/frontend/tailwind-design-system` |
+| ui-ux-pro-max | Comprehensive design guide for web and mobile applications | `.agents/skills/frontend/ui-ux-pro-max` |
 
 ## Repository Structure
 
 ```text
 fei-skills-repo/
-├── skills/                     # Multi-step skills (Centralized for easy management)
-│   ├── frontend/
-│   │   └── ui-ux-pro-max/      # Comprehensive UI/UX design skill
-│   │       ├── data/           # Local CSV database for design rules
-│   │       ├── scripts/        # Python retrieval scripts
-│   │       └── PROMPT.md       # Main skill definition prompt
-│   └── _TEMPLATE.md            # Template for creating new skills
+├── .agents/                    # Your personal agent notebook (source of truth)
+│   ├── agents.md
+│   ├── system-prompt.md
+│   ├── mcp.json
+│   ├── models.json
+│   ├── skills/                 # Skills live here
+│   │   ├── frontend/
+│   │   │   └── ui-ux-pro-max/
+│   │   └── _TEMPLATE.md
+│   ├── agents/
+│   ├── tasks/
+│   └── memories/
 ├── .github/
 │   └── copilot-instructions.md # Workspace configuration
 ├── README.md                   # This file (Includes Installation and Skills index)
 ├── CONTRIBUTING.md             # How to add new skills
-├── setup-for-agents.sh         # Installer for macOS / Linux
-├── setup-for-agents.ps1        # Installer for Windows
+├── init-dot-agents.sh          # Initialize ./\.agents on macOS / Linux
+├── init-dot-agents.ps1         # Initialize ./\.agents on Windows
 └── LICENSE                     # License information
 ```
 
@@ -205,7 +158,7 @@ We welcome new skills from Fei engineers! Ensure your contributions meet our sec
 - **Clear data boundaries** and offline intranet compatibility.
 
 To add a new skill:
-1. Use `skills/_TEMPLATE.md` to create your `SKILL.md` in the appropriate domain folder (e.g., `skills/backend/my-skill/`).
+1. Use `.agents/skills/_TEMPLATE.md` to create your `SKILL.md` in the appropriate domain folder (e.g., `.agents/skills/backend/my-skill/`).
 2. Add necessary `templates/` and `scripts/`.
 3. Test locally in your AI tool.
 4. Submit a PR for security review.
@@ -262,5 +215,4 @@ See the [MIT License](./LICENSE) file for details.
 
 ## Appendix: Script Source Code
 
-The initialization scripts (`init-agents-home.sh` and `init-agents-home.ps1`) and the installation scripts (`setup-for-agents.sh` and `setup-for-agents.ps1`) are located in the root of this repository. They handle automatic scaffolding of the `.agents Protocol` directory structure and symlinking/junction creation across macOS, Linux, and Windows for all supported tools. Feel free to inspect them directly if you wish to see how the paths and structures are resolved.
-
+The initialization scripts (`init-dot-agents.sh` and `init-dot-agents.ps1`) are located in the root of this repository. They handle creating (or filling in missing pieces of) the `.agents Protocol` directory structure under `./.agents`. Feel free to inspect them directly if you wish to see how the structure is resolved.

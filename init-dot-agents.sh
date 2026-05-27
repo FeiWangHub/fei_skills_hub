@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Fei Skills Hub — Initialize ~/.agents directory structure
+# Fei Skills Hub — Initialize .agents directory structure
 #
-# This script creates the directory structure for ~/.agents,
+# This script creates or updates the .agents directory structure in this repo,
 # following the .agents Protocol (https://dotagentsprotocol.com/).
 #
-# Usage:  bash init-agents-home.sh                  # interactive mode
-#         bash init-agents-home.sh --auto           # auto-create all
-#         bash init-agents-home.sh --dry-run        # preview only
+# Usage:  bash init-dot-agents.sh                  # interactive mode
+#         bash init-dot-agents.sh --auto           # auto-create all
+#         bash init-dot-agents.sh --dry-run        # preview only
 
 set -euo pipefail
 
@@ -23,7 +23,8 @@ warn()  { echo -e "${YELLOW}[warn]${NC}  $*"; }
 fail()  { echo -e "${RED}[fail]${NC}  $*"; }
 
 # ── Paths ───────────────────────────────────────────────────────────
-AGENTS_HOME="${HOME}/.agents"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+AGENTS_HOME="${SCRIPT_DIR}/.agents"
 SKILLS_DIR="${AGENTS_HOME}/skills"
 AGENTS_DIR="${AGENTS_HOME}/agents"
 TASKS_DIR="${AGENTS_HOME}/tasks"
@@ -80,11 +81,11 @@ create_file() {
 # ── Directory Structure ─────────────────────────────────────────────
 create_structure() {
     echo ""
-    echo "Creating ~/.agents directory structure (.agents Protocol)..."
+    echo "Creating .agents directory structure (.agents Protocol)..."
     echo ""
 
     # Main directories
-    create_dir "$AGENTS_HOME" "Agents home directory"
+    create_dir "$AGENTS_HOME" "Agents directory"
     create_dir "$SKILLS_DIR" "Skills directory"
     create_dir "$AGENTS_DIR" "Sub-agents directory"
     create_dir "$TASKS_DIR" "Tasks directory"
@@ -141,9 +142,15 @@ Use the skills provided in the skills/ directory to accomplish tasks efficiently
 
     # Root README
     create_file "$AGENTS_HOME/README.md" \
-'# ~/.agents Directory
+'# .agents Directory
 
-This directory serves as your local hub for AI agent configuration, following the [.agents Protocol](https://dotagentsprotocol.com/).
+This directory follows the [.agents Protocol](https://dotagentsprotocol.com/) and is intended to be committed to this repository.
+
+To use it as your global agents directory, link it to `~/.agents`:
+
+```bash
+ln -s "$PWD/.agents" "$HOME/.agents"
+```
 
 ## Structure
 
@@ -158,12 +165,9 @@ This directory serves as your local hub for AI agent configuration, following th
 
 ## Usage
 
-1. Link skills from Fei Skills Hub:
-   ```bash
-   bash setup-for-agents.sh --agents-home
-   ```
+1. Add or edit content in this directory and commit to your repo.
 
-2. Configure your AI tools (Claude Code, Cursor, Windsurf, etc.) to use these skills and settings.
+2. Configure your AI tools to read from `~/.agents` (or link this directory to `~/.agents`).
 ' "Main README"
 }
 
@@ -193,7 +197,7 @@ Thumbs.db
 show_summary() {
     echo ""
     echo "╔══════════════════════════════════════════════════════════╗"
-    echo "║         ~/.agents Directory Initialized                 ║"
+    echo "║          .agents Directory Initialized                  ║"
     echo "╚══════════════════════════════════════════════════════════╝"
     echo ""
     echo "Location: ${AGENTS_HOME}"
@@ -204,7 +208,7 @@ show_summary() {
     echo "  - skills/, agents/, tasks/, memories/ directories"
     echo ""
     echo "Next steps:"
-    echo "  1. Link skills: bash setup-for-agents.sh --agents-home"
+    echo "  1. Optionally link: ln -s ${AGENTS_HOME} ${HOME}/.agents"
     echo "  2. Update your MCP servers in ${AGENTS_HOME}/mcp.json"
     echo "  3. Add persistent context in ${AGENTS_HOME}/memories/"
     echo ""
@@ -215,7 +219,7 @@ show_summary() {
 # ── Main ────────────────────────────────────────────────────────────
 main() {
     echo "╔══════════════════════════════════════════════════════════╗"
-    echo "║    Fei Skills Hub — Initialize ~/.agents                ║"
+    echo "║     Fei Skills Hub — Initialize .agents                 ║"
     echo "╚══════════════════════════════════════════════════════════╝"
     echo ""
 
