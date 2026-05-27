@@ -1,17 +1,17 @@
 <#
 .SYNOPSIS
-    Fei Skills Hub — Initialize ~/.agents directory structure
+    Fei Skills Hub — Initialize .agents directory structure
 .DESCRIPTION
-    Creates the directory structure for ~/.agents, following the .agents 
-    Protocol (https://dotagentsprotocol.com/).
+    Creates or updates the .agents directory structure in this repo, following
+    the .agents Protocol (https://dotagentsprotocol.com/).
 .PARAMETER DryRun
     Preview what would be created without making changes.
 .PARAMETER Auto
     Auto-create all directories without prompting.
 .EXAMPLE
-    .\init-agents-home.ps1
-    .\init-agents-home.ps1 -Auto
-    .\init-agents-home.ps1 -DryRun
+    .\init-dot-agents.ps1
+    .\init-dot-agents.ps1 -Auto
+    .\init-dot-agents.ps1 -DryRun
 #>
 
 [CmdletBinding()]
@@ -23,7 +23,8 @@ param(
 $PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
 
 # ── Paths ───────────────────────────────────────────────────────────
-$AgentsHome = Join-Path $env:USERPROFILE '.agents'
+$RepoRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+$AgentsHome = Join-Path $RepoRoot '.agents'
 $SkillsDir = Join-Path $AgentsHome 'skills'
 $AgentsDir = Join-Path $AgentsHome 'agents'
 $TasksDir = Join-Path $AgentsHome 'tasks'
@@ -72,11 +73,11 @@ function Create-FileIfNotExists {
 # ── Directory Structure ─────────────────────────────────────────────
 function Create-Structure {
     Write-Host ""
-    Write-Host "Creating ~/.agents directory structure (.agents Protocol)..."
+    Write-Host "Creating .agents directory structure (.agents Protocol)..."
     Write-Host ""
 
     # Main directories
-    Create-DirectoryIfNotExists $AgentsHome "Agents home directory"
+    Create-DirectoryIfNotExists $AgentsHome "Agents directory"
     Create-DirectoryIfNotExists $SkillsDir "Skills directory"
     Create-DirectoryIfNotExists $AgentsDir "Sub-agents directory"
     Create-DirectoryIfNotExists $TasksDir "Tasks directory"
@@ -134,9 +135,15 @@ Use the skills provided in the skills/ directory to accomplish tasks efficiently
     Create-FileIfNotExists (Join-Path $AgentsHome 'models.json') $modelsJson "models.json"
 
     $rootReadme = @'
-# ~/.agents Directory
+# .agents Directory
 
-This directory serves as your local hub for AI agent configuration, following the [.agents Protocol](https://dotagentsprotocol.com/).
+This directory follows the [.agents Protocol](https://dotagentsprotocol.com/) and is intended to be committed to this repository.
+
+To use it as your global agents directory, link it to `~/.agents`:
+
+```powershell
+New-Item -ItemType Junction -Path "$HOME\.agents" -Target "$PWD\.agents"
+```
 
 ## Structure
 
@@ -151,12 +158,9 @@ This directory serves as your local hub for AI agent configuration, following th
 
 ## Usage
 
-1. Link skills from Fei Skills Hub:
-   ```powershell
-   .\setup-for-agents.ps1 -AgentsHome
-   ```
+1. Add or edit content in this directory and commit to your repo.
 
-2. Configure your AI tools (Claude Code, Cursor, Windsurf, etc.) to use these skills and settings.
+2. Configure your AI tools to read from `~/.agents` (or link this directory to `~/.agents`).
 '@
     Create-FileIfNotExists (Join-Path $AgentsHome 'README.md') $rootReadme "Main README"
 }
@@ -189,7 +193,7 @@ Thumbs.db
 function Show-Summary {
     Write-Host ""
     Write-Host "========================================================="
-    Write-Host "    ~/.agents Directory Initialized"
+    Write-Host "    .agents Directory Initialized"
     Write-Host "========================================================="
     Write-Host ""
     Write-Host "Location: $AgentsHome"
@@ -200,7 +204,7 @@ function Show-Summary {
     Write-Host "  - skills/, agents/, tasks/, memories/ directories"
     Write-Host ""
     Write-Host "Next steps:"
-    Write-Host "  1. Link skills: .\setup-for-agents.ps1 -AgentsHome"
+    Write-Host "  1. Optionally link: New-Item -ItemType Junction -Path `"$HOME\.agents`" -Target `"$AgentsHome`""
     Write-Host "  2. Update your MCP servers in $(Join-Path $AgentsHome 'mcp.json')"
     Write-Host "  3. Add persistent context in $(Join-Path $AgentsHome 'memories\')"
     Write-Host ""
@@ -210,7 +214,7 @@ function Show-Summary {
 
 # ── Main ────────────────────────────────────────────────────────────
 Write-Host "========================================================="
-Write-Host "  Fei Skills Hub — Initialize ~/.agents"
+Write-Host "  Fei Skills Hub — Initialize .agents"
 Write-Host "========================================================="
 Write-Host ""
 
