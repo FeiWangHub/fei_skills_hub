@@ -28,8 +28,8 @@ You receive these parameters in your prompt:
 
 ### Step 2: Read Both Skills
 
-1. Read the winner skill's SKILL.md and key referenced files
-2. Read the loser skill's SKILL.md and key referenced files
+1. Read the winner skill's skill.md and key referenced files
+2. Read the loser skill's skill.md and key referenced files
 3. Identify structural differences:
    - Instructions clarity and specificity
    - Script/tool usage patterns

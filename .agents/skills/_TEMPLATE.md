@@ -1,6 +1,8 @@
 ---
+id: example-skill
 name: Example Skill Template
 description: "Use when: you want to understand the structure of a skill. This is a template showing required and optional sections."
+enabled: true
 ---
 
 # Example Skill: [Your Skill Name]

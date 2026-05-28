@@ -12,12 +12,16 @@ ln -s "$PWD/.agents" "$HOME/.agents"
 
 - `agents.md`            # instructions (AGENTS.md compatible)
 - `system-prompt.md`     # system prompt
+- `speakmcp-settings.json` # general settings
 - `mcp.json`             # MCP server configuration
 - `models.json`          # model presets & provider keys
+- `layouts/`             # UI/layout preferences
 - `skills/`              # codified procedural knowledge
 - `agents/`              # sub-agent profiles
 - `tasks/`               # scheduled repeat tasks
 - `memories/`            # persistent memory
+- `knowledge/`           # optional free-form notes
+- `.backups/`            # optional local backups
 
 ## Usage
 

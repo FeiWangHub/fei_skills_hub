@@ -59,12 +59,12 @@ Create specific instruction files:
 
 ### 3. `.github/skills/` Directory
 Create reusable skills as self-contained folders:
-- `setup-component/SKILL.md` - Component/module creation
-- `write-tests/SKILL.md` - Test generation
-- `code-review/SKILL.md` - Code review assistance
-- `refactor-code/SKILL.md` - Code refactoring
-- `generate-docs/SKILL.md` - Documentation generation
-- `debug-issue/SKILL.md` - Debugging assistance
+- `setup-component/skill.md` - Component/module creation
+- `write-tests/skill.md` - Test generation
+- `code-review/skill.md` - Code review assistance
+- `refactor-code/skill.md` - Code refactoring
+- `generate-docs/skill.md` - Documentation generation
+- `debug-issue/skill.md` - Debugging assistance
 
 ### 4. `.github/agents/` Directory
 Always create these 4 agents:
@@ -195,17 +195,17 @@ project-root/
 │   │   └── code-review.instructions.md
 │   ├── skills/
 │   │   ├── setup-component/
-│   │   │   └── SKILL.md
+│   │   │   └── skill.md
 │   │   ├── write-tests/
-│   │   │   └── SKILL.md
+│   │   │   └── skill.md
 │   │   ├── code-review/
-│   │   │   └── SKILL.md
+│   │   │   └── skill.md
 │   │   ├── refactor-code/
-│   │   │   └── SKILL.md
+│   │   │   └── skill.md
 │   │   ├── generate-docs/
-│   │   │   └── SKILL.md
+│   │   │   └── skill.md
 │   │   └── debug-issue/
-│   │       └── SKILL.md
+│   │       └── skill.md
 │   ├── agents/
 │   │   ├── software-engineer.agent.md
 │   │   ├── architect.agent.md
@@ -238,7 +238,7 @@ Apply the repository-wide guidance from `../copilot-instructions.md` to all code
 <!-- Adapt the sections below to match the project's specific technology choices and preferences -->
 ```
 
-**Skills (SKILL.md):**
+**Skills (skill.md):**
 ```md
 ---
 name: {skill-name}

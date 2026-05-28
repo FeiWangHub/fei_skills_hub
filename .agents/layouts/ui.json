@@ -1,0 +1,10 @@
+{
+  "theme": "system",
+  "density": "comfortable",
+  "codeFont": "monospace",
+  "assistant": {
+    "name": "OWL",
+    "showTimestamps": false,
+    "compactMode": false
+  }
+}
