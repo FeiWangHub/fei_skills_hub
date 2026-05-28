@@ -47,12 +47,16 @@ By using our initialization scripts (`init-dot-agents.sh` or `init-dot-agents.ps
 .agents/
 ├── agents.md            # global agent instructions
 ├── system-prompt.md     # system prompt template
+├── speakmcp-settings.json # general settings
 ├── mcp.json             # MCP server configuration
 ├── models.json          # model presets & provider keys
+├── layouts/             # UI/layout preferences
 ├── skills/              # codified procedural knowledge
 ├── agents/              # sub-agent profiles
 ├── tasks/               # scheduled repeat tasks
-└── memories/            # persistent memory
+├── memories/            # persistent memory
+├── knowledge/           # optional free-form notes
+└── .backups/            # optional local backups
 ```
 
 This layout ensures your skills, sub-agents, tasks, and memories are portable and instantly available to any compatible AI IDE or CLI (like Claude Code, Cursor, OpenCode, etc.).
@@ -132,15 +136,19 @@ fei-skills-repo/
 ├── .agents/                    # Your personal agent notebook (source of truth)
 │   ├── agents.md
 │   ├── system-prompt.md
+│   ├── speakmcp-settings.json
 │   ├── mcp.json
 │   ├── models.json
+│   ├── layouts/
 │   ├── skills/                 # Skills live here
 │   │   ├── frontend/
 │   │   │   └── ui-ux-pro-max/
 │   │   └── _TEMPLATE.md
 │   ├── agents/
 │   ├── tasks/
-│   └── memories/
+│   ├── memories/
+│   ├── knowledge/
+│   └── .backups/
 ├── .github/
 │   └── copilot-instructions.md # Workspace configuration
 ├── README.md                   # This file (Includes Installation and Skills index)
@@ -158,7 +166,7 @@ We welcome new skills from Fei engineers! Ensure your contributions meet our sec
 - **Clear data boundaries** and offline intranet compatibility.
 
 To add a new skill:
-1. Use `.agents/skills/_TEMPLATE.md` to create your `SKILL.md` in the appropriate domain folder (e.g., `.agents/skills/backend/my-skill/`).
+1. Use `.agents/skills/_TEMPLATE.md` to create your `skill.md` in the appropriate domain folder (e.g., `.agents/skills/backend/my-skill/`).
 2. Add necessary `templates/` and `scripts/`.
 3. Test locally in your AI tool.
 4. Submit a PR for security review.

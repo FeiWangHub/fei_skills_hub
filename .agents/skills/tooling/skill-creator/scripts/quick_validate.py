@@ -13,10 +13,12 @@ def validate_skill(skill_path):
     """Basic validation of a skill"""
     skill_path = Path(skill_path)
 
-    # Check SKILL.md exists
-    skill_md = skill_path / 'SKILL.md'
+    # Check skill.md exists
+    skill_md = skill_path / "skill.md"
     if not skill_md.exists():
-        return False, "SKILL.md not found"
+        skill_md = skill_path / "SKILL.md"
+    if not skill_md.exists():
+        return False, "skill.md not found"
 
     # Read and validate frontmatter
     content = skill_md.read_text()
@@ -39,13 +41,25 @@ def validate_skill(skill_path):
         return False, f"Invalid YAML in frontmatter: {e}"
 
     # Define allowed properties
-    ALLOWED_PROPERTIES = {'name', 'description', 'license', 'allowed-tools', 'metadata', 'compatibility'}
+    ALLOWED_PROPERTIES = {
+        'id',
+        'name',
+        'description',
+        'enabled',
+        'kind',
+        'role',
+        'tags',
+        'license',
+        'allowed-tools',
+        'metadata',
+        'compatibility'
+    }
 
     # Check for unexpected properties (excluding nested keys under metadata)
     unexpected_keys = set(frontmatter.keys()) - ALLOWED_PROPERTIES
     if unexpected_keys:
         return False, (
-            f"Unexpected key(s) in SKILL.md frontmatter: {', '.join(sorted(unexpected_keys))}. "
+            f"Unexpected key(s) in skill.md frontmatter: {', '.join(sorted(unexpected_keys))}. "
             f"Allowed properties are: {', '.join(sorted(ALLOWED_PROPERTIES))}"
         )
 

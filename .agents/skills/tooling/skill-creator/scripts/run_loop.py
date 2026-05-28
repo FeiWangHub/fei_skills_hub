@@ -261,8 +261,8 @@ def main():
     eval_set = json.loads(Path(args.eval_set).read_text())
     skill_path = Path(args.skill_path)
 
-    if not (skill_path / "SKILL.md").exists():
-        print(f"Error: No SKILL.md found at {skill_path}", file=sys.stderr)
+    if not (skill_path / "skill.md").exists() and not (skill_path / "SKILL.md").exists():
+        print(f"Error: No skill.md found at {skill_path}", file=sys.stderr)
         sys.exit(1)
 
     name, _, _ = parse_skill_md(skill_path)

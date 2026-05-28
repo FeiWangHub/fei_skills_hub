@@ -59,11 +59,11 @@ fei_skills_hub/
 
 ## Skill Anatomy
 
-Each skill is a directory containing at minimum a `SKILL.md` file:
+Each skill is a directory containing at minimum a `skill.md` file:
 
 ```
 .agents/skills/<domain>/<skill-name>/
-├── SKILL.md          # Required — frontmatter (name, description) + instructions
+├── skill.md          # Required — frontmatter + instructions
 ├── templates/        # Optional — file templates used by the skill
 ├── scripts/          # Optional — helper scripts (Python, Bash, etc.)
 ├── agents/           # Optional — sub-agent definitions
@@ -71,7 +71,7 @@ Each skill is a directory containing at minimum a `SKILL.md` file:
 └── assets/           # Optional — static assets
 ```
 
-The `SKILL.md` frontmatter **must** include `name` and `description` fields. The description drives skill triggering — it should clearly state when the skill should be used. See `.agents/skills/_TEMPLATE.md` for the full template.
+The `skill.md` frontmatter should include `id` (recommended), `name`, and `description`. The description drives skill triggering — it should clearly state when the skill should be used. See `.agents/skills/_TEMPLATE.md` for the full template.
 
 ## Common Tasks
 
@@ -79,7 +79,7 @@ The `SKILL.md` frontmatter **must** include `name` and `description` fields. The
 
 1. Create a new directory under `.agents/skills/<domain>/`
 2. Use `.agents/skills/_TEMPLATE.md` as your starting point
-3. Write the `SKILL.md` with clear frontmatter (`name`, `description`)
+3. Write the `skill.md` with clear frontmatter (`id`, `name`, `description`)
 4. Add any `templates/`, `scripts/`, or other supporting files
 5. Update the skills table in `README.md`
 6. No external network calls, credential storage, or hardcoded tokens are permitted
@@ -117,7 +117,7 @@ The init scripts support three modes:
 
 ### Design Principles
 
-- **Tool-agnostic:** Skills use Markdown-based `SKILL.md` files, not tool-specific formats. They should work across Claude Code, Copilot, Gemini CLI, etc.
+- **Tool-agnostic:** Skills use Markdown-based `skill.md` files, not tool-specific formats. They should work across Claude Code, Copilot, Gemini CLI, etc.
 - **Security-first:** All skills are designed for restricted intranet environments. No external API calls, no runtime package downloads, no credential storage.
 - **Self-contained:** Each skill carries its own templates, scripts, and references.
 
@@ -125,7 +125,7 @@ The init scripts support three modes:
 
 - Skill directories: lowercase with hyphens (e.g., `frontend-design`, `api-design-principles`)
 - Domain folders: singular nouns (e.g., `backend/`, `frontend/`, `cloud/`)
-- `SKILL.md` is always uppercase
+- Skill file: `skill.md`
 
 ### Branch / Commit Conventions
 

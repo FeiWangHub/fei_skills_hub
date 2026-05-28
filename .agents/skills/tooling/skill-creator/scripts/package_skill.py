@@ -61,10 +61,12 @@ def package_skill(skill_path, output_dir=None):
         print(f"❌ Error: Path is not a directory: {skill_path}")
         return None
 
-    # Validate SKILL.md exists
-    skill_md = skill_path / "SKILL.md"
+    # Validate skill.md exists
+    skill_md = skill_path / "skill.md"
     if not skill_md.exists():
-        print(f"❌ Error: SKILL.md not found in {skill_path}")
+        skill_md = skill_path / "SKILL.md"
+    if not skill_md.exists():
+        print(f"❌ Error: skill.md not found in {skill_path}")
         return None
 
     # Run validation before packaging
