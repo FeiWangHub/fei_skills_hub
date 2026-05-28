@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Fei Skills Hub — Initialize .agents directory structure
+# Fei Skills Hub — Initialize the .agents Protocol
 #
-# This script creates or updates the .agents directory structure in this repo,
+# This script links this repository's .agents directory to ~/.agents,
 # following the .agents Protocol (https://dotagentsprotocol.com/).
 #
 # Usage:  bash init-dot-agents.sh                  # interactive mode
-#         bash init-dot-agents.sh --auto           # auto-create all
+#         bash init-dot-agents.sh --auto           # auto-confirm all prompts
 #         bash init-dot-agents.sh --dry-run        # preview only
 
 set -euo pipefail
@@ -25,194 +25,118 @@ fail()  { echo -e "${RED}[fail]${NC}  $*"; }
 # ── Paths ───────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 AGENTS_HOME="${SCRIPT_DIR}/.agents"
-SKILLS_DIR="${AGENTS_HOME}/skills"
-AGENTS_DIR="${AGENTS_HOME}/agents"
-TASKS_DIR="${AGENTS_HOME}/tasks"
-MEMORIES_DIR="${AGENTS_HOME}/memories"
 
 # ── Options ─────────────────────────────────────────────────────────
 DRY_RUN=false
-AUTO_CREATE=false
+AUTO_YES=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --dry-run)  DRY_RUN=true; shift ;;
-        --auto)     AUTO_CREATE=true; shift ;;
+        --auto)     AUTO_YES=true; shift ;;
         *)          shift ;;
     esac
 done
 
-# ── Utility Functions ───────────────────────────────────────────────
-create_dir() {
-    local dir="$1" desc="$2"
-    
+# ── Validate repo .agents directory ─────────────────────────────────
+validate_agents() {
+    if [ ! -d "$AGENTS_HOME" ]; then
+        fail "Cannot find .agents directory at: ${AGENTS_HOME}"
+        fail "Make sure you are running this script from the repository root."
+        exit 1
+    fi
+
+    local missing=()
+    for item in skills agents.md system-prompt.md mcp.json models.json; do
+        if [ ! -e "$AGENTS_HOME/$item" ]; then
+            missing+=("$item")
+        fi
+    done
+
+    if [ ${#missing[@]} -gt 0 ]; then
+        fail "The .agents directory is missing required items:"
+        for m in "${missing[@]}"; do
+            fail "  - $m"
+        done
+        fail "Please update your repository and try again."
+        exit 1
+    fi
+}
+
+# ── Handle existing ~/.agents ───────────────────────────────────────
+handle_existing() {
+    # Check if it's already a symlink pointing to our repo (idempotent)
+    if [ -L "$HOME/.agents" ]; then
+        local current_target
+        current_target=$(readlink "$HOME/.agents")
+        if [ "$current_target" = "$AGENTS_HOME" ]; then
+            ok "~/.agents is already linked to this repository."
+            return 1  # signal: already linked, nothing to do
+        fi
+    fi
+
+    warn "~/.agents already exists."
+    echo ""
+    echo "  (b) Back up the existing directory (rename with timestamp)"
+    echo "  (q) Quit — do nothing"
+    echo ""
+
+    if $AUTO_YES; then
+        REPLY="b"
+    else
+        read -p "Choose an option (b/q) " -n 1 -r
+        echo
+    fi
+
+    case "$REPLY" in
+        [Bb])
+            local bkp="$HOME/.agents.bak.$(date '+%Y%m%d-%H%M%S')"
+            if $DRY_RUN; then
+                info "[DRY RUN] mv ~/.agents ${bkp}"
+            else
+                mv "$HOME/.agents" "$bkp"
+                ok "Backed up existing ~/.agents to ${bkp}"
+            fi
+            ;;
+        [Qq])
+            info "Cancelled. No changes made."
+            exit 0
+            ;;
+        *)
+            fail "Invalid option. Exiting."
+            exit 1
+            ;;
+    esac
+    return 0
+}
+
+# ── Create symlink ──────────────────────────────────────────────────
+create_symlink() {
     if $DRY_RUN; then
-        info "[DRY RUN] mkdir: $dir"
+        info "[DRY RUN] ln -s ${AGENTS_HOME} ${HOME}/.agents"
         return
     fi
 
-    if [ -d "$dir" ]; then
-        warn "Directory already exists: $dir"
-        return
-    fi
+    ln -s "$AGENTS_HOME" "$HOME/.agents"
+    ok "Symlinked: ~/.agents -> ${AGENTS_HOME}"
 
-    mkdir -p "$dir"
-    ok "Created: $dir ($desc)"
-}
-
-create_file() {
-    local file="$1" content="$2" desc="$3"
-    
-    if $DRY_RUN; then
-        info "[DRY RUN] create: $file"
-        return
-    fi
-
-    if [ -f "$file" ]; then
-        warn "File already exists: $file"
-        return
-    fi
-
-    mkdir -p "$(dirname "$file")"
-    echo "$content" > "$file"
-    ok "Created: $file ($desc)"
-}
-
-# ── Directory Structure ─────────────────────────────────────────────
-create_structure() {
     echo ""
-    echo "Creating .agents directory structure (.agents Protocol)..."
-    echo ""
-
-    # Main directories
-    create_dir "$AGENTS_HOME" "Agents directory"
-    create_dir "$SKILLS_DIR" "Skills directory"
-    create_dir "$AGENTS_DIR" "Sub-agents directory"
-    create_dir "$TASKS_DIR" "Tasks directory"
-    create_dir "$MEMORIES_DIR" "Memories directory"
-
-    # Skills subdirectories (organized by domain - optional but useful)
-    create_dir "$SKILLS_DIR/frontend" "Frontend skills"
-    create_dir "$SKILLS_DIR/backend" "Backend skills"
-    create_dir "$SKILLS_DIR/devops" "DevOps skills"
-    create_dir "$SKILLS_DIR/data" "Data skills"
-    create_dir "$SKILLS_DIR/platform" "Platform skills"
-    create_dir "$SKILLS_DIR/security" "Security skills"
-    create_dir "$SKILLS_DIR/ai" "AI skills"
-    create_dir "$SKILLS_DIR/mobile" "Mobile skills"
-    create_dir "$SKILLS_DIR/infrastructure" "Infrastructure skills"
-}
-
-# ── Protocol Files ──────────────────────────────────────────────────
-create_protocol_files() {
-    echo ""
-    echo "Creating .agents Protocol files..."
-    echo ""
-
-    # agents.md
-    create_file "$AGENTS_HOME/agents.md" \
-'# Agent Instructions
-
-This file contains global instructions and conventions for your AI agents.
-It is compatible with the AGENTS.md standard.
-
-## Conventions
-- Write clean, self-documenting code.
-- Think step-by-step before making changes.
-' "agents.md"
-
-    # system-prompt.md
-    create_file "$AGENTS_HOME/system-prompt.md" \
-'You are an expert AI assistant.
-Follow the instructions in agents.md and utilize available tools in mcp.json.
-Use the skills provided in the skills/ directory to accomplish tasks efficiently.
-' "system-prompt.md"
-
-    # mcp.json
-    create_file "$AGENTS_HOME/mcp.json" \
-'{
-  "mcpServers": {}
-}' "mcp.json"
-
-    # models.json
-    create_file "$AGENTS_HOME/models.json" \
-'{
-  "models": []
-}' "models.json"
-
-    # Root README
-    create_file "$AGENTS_HOME/README.md" \
-'# .agents Directory
-
-This directory follows the [.agents Protocol](https://dotagentsprotocol.com/) and is intended to be committed to this repository.
-
-To use it as your global agents directory, link it to `~/.agents`:
-
-```bash
-ln -s "$PWD/.agents" "$HOME/.agents"
-```
-
-## Structure
-
-- `agents.md`            # instructions (AGENTS.md compatible)
-- `system-prompt.md`     # system prompt
-- `mcp.json`             # MCP server configuration
-- `models.json`          # model presets & provider keys
-- `skills/`              # codified procedural knowledge
-- `agents/`              # sub-agent profiles
-- `tasks/`               # scheduled repeat tasks
-- `memories/`            # persistent memory
-
-## Usage
-
-1. Add or edit content in this directory and commit to your repo.
-
-2. Configure your AI tools to read from `~/.agents` (or link this directory to `~/.agents`).
-' "Main README"
-}
-
-# ── .gitignore ─────────────────────────────────────────────────────
-create_gitignore() {
-    echo ""
-    echo "Creating .gitignore..."
-    echo ""
-
-    create_file "$AGENTS_HOME/.gitignore" \
-'# OS-specific
-.DS_Store
-Thumbs.db
-
-# IDE-specific
-.vscode/
-.idea/
-
-# Temporary files
-*.tmp
-*.swp
-*~
-' "Gitignore file"
+    echo "Available skills:"
+    ls -1 "$HOME/.agents/skills"
 }
 
 # ── Summary ─────────────────────────────────────────────────────────
 show_summary() {
     echo ""
     echo "╔══════════════════════════════════════════════════════════╗"
-    echo "║          .agents Directory Initialized                  ║"
+    echo "║       .agents Protocol Initialized                      ║"
     echo "╚══════════════════════════════════════════════════════════╝"
     echo ""
-    echo "Location: ${AGENTS_HOME}"
+    echo "  Source:  ${AGENTS_HOME}"
+    echo "  Target:  ${HOME}/.agents"
     echo ""
-    echo "Created following the .agents Protocol standards:"
-    echo "  - mcp.json & models.json"
-    echo "  - agents.md & system-prompt.md"
-    echo "  - skills/, agents/, tasks/, memories/ directories"
-    echo ""
-    echo "Next steps:"
-    echo "  1. Optionally link: ln -s ${AGENTS_HOME} ${HOME}/.agents"
-    echo "  2. Update your MCP servers in ${AGENTS_HOME}/mcp.json"
-    echo "  3. Add persistent context in ${AGENTS_HOME}/memories/"
-    echo ""
-    echo "Documentation: ${AGENTS_HOME}/README.md"
+    echo "Your AI tools (Claude Code, Cursor, Copilot, etc.) can"
+    echo "now use the skills, prompts, and agent configs from this hub."
     echo ""
 }
 
@@ -228,9 +152,12 @@ main() {
         echo ""
     fi
 
-    # Confirm before proceeding (unless --auto)
-    if [ ! "$AUTO_CREATE" = true ] && [ ! "$DRY_RUN" = true ]; then
-        echo "This will create the directory structure at: $AGENTS_HOME"
+    # Step 1: Validate repo structure
+    validate_agents
+
+    # Step 2: Confirm (unless --auto)
+    if ! $AUTO_YES && ! $DRY_RUN; then
+        echo "This will link ~/.agents -> ${AGENTS_HOME}"
         echo ""
         read -p "Continue? (y/n) " -n 1 -r
         echo
@@ -240,13 +167,21 @@ main() {
         fi
     fi
 
-    # Create everything
-    create_structure
-    create_protocol_files
-    create_gitignore
+    # Step 3: Handle existing ~/.agents
+    if [ -e "$HOME/.agents" ] || [ -L "$HOME/.agents" ]; then
+        handle_existing
+        if [ $? -eq 1 ]; then
+            # Already linked to our repo
+            show_summary
+            return
+        fi
+    fi
+
+    # Step 4: Create the symlink
+    create_symlink
 
     if $DRY_RUN; then
-        info "Dry run complete. Run without --dry-run to actually initialize."
+        info "Dry run complete. Run without --dry-run to apply changes."
     else
         show_summary
     fi
