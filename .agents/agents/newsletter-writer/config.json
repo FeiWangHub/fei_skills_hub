@@ -1,0 +1,13 @@
+{
+  "toolConfig": {
+    "disabledServers": [],
+    "enabledBuiltinTools": []
+  },
+  "modelConfig": {
+    "mcpToolsProviderId": "",
+    "mcpToolsOpenaiModel": ""
+  },
+  "connection": {
+    "type": "internal"
+  }
+}
