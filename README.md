@@ -129,6 +129,18 @@ New-Item -ItemType Junction -Path "$HOME\.agents" -Target "$PWD\.agents"
 | tailwind-design-system | Build scalable design systems with Tailwind CSS v4, design tokens, component libraries, and responsive patterns. Use when creating component libraries, implementing design systems, or standardizing UI patterns. | `.agents/skills/frontend/tailwind-design-system` |
 | ui-ux-pro-max | Comprehensive design guide for web and mobile applications | `.agents/skills/frontend/ui-ux-pro-max` |
 
+## Available Agents
+
+Sub-agents live in `.agents/agents/` and can be delegated to by the main agent. Each is a self-contained `agent.md` (instructions + frontmatter) plus `config.json`.
+
+| Name | Description | Location |
+|------|-------------|----------|
+| code-reviewer | Reviews code for security, performance, and correctness | `.agents/agents/code-reviewer` |
+| blog-writer | Engaging technical blog posts and tutorials with a human voice and honest failure stories | `.agents/agents/blog-writer` |
+| social-media-writer | Platform-specific social posts and threads (Twitter/X, LinkedIn, Threads) with hooks and CTAs | `.agents/agents/social-media-writer` |
+| copy-editor | Proofreads and polishes content for grammar, clarity, and consistency while preserving the author's voice | `.agents/agents/copy-editor` |
+| newsletter-writer | Engaging email newsletters with compelling subject lines, curated links, and personal commentary | `.agents/agents/newsletter-writer` |
+
 ## Repository Structure
 
 ```text
