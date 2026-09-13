@@ -1,0 +1,51 @@
+# Submission Manifest — Data Format Template
+#
+# One entry per submitted project. This file is illustrative DATA, not executable code.
+# Copy this structure into your actual manifest (submissions.yaml) and populate for all 150+ entries.
+
+submissions:
+  - submission_id: "sub-001"
+    project_name: "PR Risk Summarizer Skill"
+    repo_url: "https://internal-git.bank.corp/hackathon/pr-risk-summarizer"
+    track: "sdlc-productivity"
+    declared_artifact_type: "skill"   # self-reported hint only — classifier in references/09 §2.3 is authoritative
+    contact: "jane.doe@bank.corp"
+    team_members:
+      - "jane.doe@bank.corp"
+      - "john.smith@bank.corp"
+
+  - submission_id: "sub-002"
+    project_name: "Reconciliation Copilot Agent"
+    repo_url: "https://internal-git.bank.corp/hackathon/recon-copilot-agent"
+    track: "business-workflow"
+    declared_artifact_type: "copilot_agent"
+    contact: "alex.lee@bank.corp"
+    team_members:
+      - "alex.lee@bank.corp"
+
+  - submission_id: "sub-003"
+    project_name: "Batch Job Failure Triage (OpenCode)"
+    repo_url: "https://internal-git.bank.corp/hackathon/batch-triage-opencode"
+    track: "sdlc-productivity"
+    declared_artifact_type: "opencode_agent"
+    contact: "priya.k@bank.corp"
+    team_members:
+      - "priya.k@bank.corp"
+      - "wei.chen@bank.corp"
+      - "sara.m@bank.corp"
+
+  - submission_id: "sub-004"
+    project_name: "Legacy Mainframe Log Parser"
+    repo_url: "https://internal-git.bank.corp/hackathon/mainframe-log-parser"
+    track: "infrastructure"
+    declared_artifact_type: "source_project"
+    contact: "tom.b@bank.corp"
+    team_members:
+      - "tom.b@bank.corp"
+
+# Field notes:
+# - submission_id: stable unique key, used across all downstream JSON (gate_result, judge_output, tier2_result, submission_record)
+# - repo_url: must resolve on the internal Git host reachable by the pipeline's fetch stage
+# - track: organizer-defined hackathon track/category (freeform string, but should be from a controlled list agreed by organizers)
+# - declared_artifact_type: one of skill | copilot_agent | opencode_agent | source_project — hint only, not authoritative
+# - contact / team_members: for remediation notifications and human-review follow-up

@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-09-13T09:00:00Z",
+  "total_submissions": 152,
+  "gate_pass_count": 137,
+  "gate_fail_count": 15,
+  "tier2_evaluated_count": 30,
+  "by_artifact_type": {
+    "skill": 61,
+    "copilot_agent": 34,
+    "opencode_agent": 19,
+    "source_project": 38
+  },
+  "score_distribution": {
+    "min": 8,
+    "max": 96,
+    "median": 61,
+    "p90": 84
+  },
+  "submissions": [
+    {
+      "submission_id": "sub-001",
+      "project_name": "PR Risk Summarizer Skill",
+      "repo_url": "https://internal-git.bank.corp/hackathon/pr-risk-summarizer",
+      "track": "sdlc-productivity",
+      "artifact_type": "skill",
+      "contact": "jane.doe@bank.corp",
+      "final_score": 68,
+      "needs_human_review": false,
+      "human_review_reasons": [],
+      "human_review_status": "not_needed",
+      "human_review_notes": null,
+      "rank_overall": 42,
+      "rank_within_track": 6
+    },
+    {
+      "submission_id": "sub-002",
+      "project_name": "Reconciliation Copilot Agent",
+      "repo_url": "https://internal-git.bank.corp/hackathon/recon-copilot-agent",
+      "track": "business-workflow",
+      "artifact_type": "copilot_agent",
+      "contact": "alex.lee@bank.corp",
+      "final_score": 91,
+      "needs_human_review": true,
+      "human_review_reasons": [
+        "final_score within +/-5 points of top-10 award cutoff (cutoff=90)"
+      ],
+      "human_review_status": "pending",
+      "human_review_notes": null,
+      "rank_overall": 3,
+      "rank_within_track": 1
+    },
+    {
+      "submission_id": "sub-004",
+      "project_name": "Legacy Mainframe Log Parser",
+      "repo_url": "https://internal-git.bank.corp/hackathon/mainframe-log-parser",
+      "track": "infrastructure",
+      "artifact_type": "source_project",
+      "contact": "tom.b@bank.corp",
+      "final_score": 8,
+      "needs_human_review": true,
+      "human_review_reasons": [
+        "gate_status = fail (hardcoded internal hostname detected)"
+      ],
+      "human_review_status": "pending",
+      "human_review_notes": null,
+      "rank_overall": null,
+      "rank_within_track": null
+    }
+  ]
+}

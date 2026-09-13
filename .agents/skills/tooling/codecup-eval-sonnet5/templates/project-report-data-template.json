@@ -1,0 +1,100 @@
+{
+  "submission_id": "sub-001",
+  "project_name": "PR Risk Summarizer Skill",
+  "repo_url": "https://internal-git.bank.corp/hackathon/pr-risk-summarizer",
+  "track": "sdlc-productivity",
+  "artifact_type": "skill",
+  "contact": "jane.doe@bank.corp",
+  "gate_result": {
+    "submission_id": "sub-001",
+    "artifact_type": "skill",
+    "gate_status": "pass",
+    "schema_conformance": {
+      "checked_against": "standard_a_claude_skill",
+      "violations": []
+    },
+    "security_scan_result": {
+      "auto_fail_hits": [],
+      "warn_hits": [
+        {
+          "category": "agent_tool_execution_risk",
+          "signature_matched": "subprocess.Popen(shell=True)",
+          "file_path": "scripts/summarize.py",
+          "line": 42
+        }
+      ]
+    },
+    "gate_fail_reasons": [],
+    "evaluated_at": "2026-09-10T02:15:00Z"
+  },
+  "judge_output": {
+    "submission_id": "sub-001",
+    "artifact_type": "skill",
+    "dimensions": {
+      "business_value": {
+        "band": 4,
+        "score": 20,
+        "reasoning": "README states this reduces PR review time for risk-sensitive changes by auto-flagging touched security-critical files, with an estimated 15-minute-per-PR savings claim. Scoped to one team's workflow but plausibly reusable.",
+        "evidence": [
+          { "file_path": "README.md", "line": "12-18", "note": "impact estimate stated" }
+        ]
+      },
+      "technical_architecture": {
+        "band": 3,
+        "score": 15,
+        "reasoning": "SKILL.md defines a single clear tool call chain; no explicit retry/recovery logic found.",
+        "evidence": [
+          { "file_path": "SKILL.md", "line": "30-55", "note": "workflow steps" }
+        ]
+      },
+      "security_compliance": {
+        "band": 3,
+        "score": 12,
+        "reasoning": "One Warn-level finding (subprocess shell=True) with no visible input sanitization comment nearby; otherwise no other flagged patterns.",
+        "locked_by_gate_failure": false,
+        "evidence": [
+          { "file_path": "scripts/summarize.py", "line": "42", "note": "shell=True usage" }
+        ]
+      },
+      "engineering_rigor": {
+        "band": 3,
+        "score": 9,
+        "reasoning": "evals/evals.json present with 4 realistic test prompts; commit history shows 2 distinct committers over 8 commits.",
+        "evidence": [
+          { "file_path": "evals/evals.json", "line": "1-40", "note": "eval cases present" }
+        ]
+      },
+      "docs_schema_conformance": {
+        "band": 4,
+        "score": 12,
+        "reasoning": "SKILL.md includes What It Does, How It Works, and a Troubleshooting section; frontmatter passes gate cleanly.",
+        "evidence": [
+          { "file_path": "SKILL.md", "line": "1-6", "note": "frontmatter" }
+        ]
+      }
+    },
+    "tier1_total": 68,
+    "strengths": [
+      "Clear, quantified business justification",
+      "Passes schema gate cleanly with no violations"
+    ],
+    "weaknesses": [
+      "shell=True subprocess usage flagged as a Warn-level security finding",
+      "No retry/error-recovery logic in the tool chain"
+    ],
+    "observations_not_scored": [
+      "Consider adding an explicit allow-list check before the subprocess call."
+    ],
+    "judge_model": "internal-llm-v1",
+    "judge_temperature": 0.0,
+    "judged_at": "2026-09-10T02:20:00Z"
+  },
+  "tier2_result": null,
+  "final_score": 68,
+  "needs_human_review": false,
+  "human_review_reasons": [],
+  "human_review_status": "not_needed",
+  "human_review_notes": null,
+  "rank_overall": 42,
+  "rank_within_track": 6
+}
