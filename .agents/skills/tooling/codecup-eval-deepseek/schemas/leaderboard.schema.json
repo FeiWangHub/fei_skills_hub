@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codecup.internal/schemas/leaderboard.schema.json",
+  "title": "CodeCup Leaderboard / Dashboard Aggregate",
+  "description": "Aggregate of all project results. Consumed by the static dashboard generator.",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "entries"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "rubric_version": { "type": "string" },
+    "weight_profile_version": { "type": "string" },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "total_submissions": { "type": "integer" },
+        "gate_pass_count": { "type": "integer" },
+        "gate_fail_count": { "type": "integer" },
+        "dynamic_evaluated_count": { "type": "integer" },
+        "by_artifact_type": {
+          "type": "object",
+          "properties": {
+            "skill": { "type": "integer" },
+            "copilot_agent": { "type": "integer" },
+            "opencode_agent": { "type": "integer" },
+            "source_project": { "type": "integer" }
+          }
+        },
+        "score_distribution": {
+          "type": "object",
+          "properties": {
+            "min": { "type": "number" },
+            "max": { "type": "number" },
+            "median": { "type": "number" },
+            "p90": { "type": "number" }
+          }
+        }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "description": "Sorted by final_score desc",
+      "items": {
+        "type": "object",
+        "required": ["submission_id", "project_name", "artifact_type", "final_score"],
+        "additionalProperties": false,
+        "properties": {
+          "submission_id": { "type": "string" },
+          "project_name": { "type": "string" },
+          "team": { "type": ["string", "null"] },
+          "track": { "type": ["string", "null"] },
+          "artifact_type": { "enum": ["skill", "copilot_agent", "opencode_agent", "source_project"] },
+          "weight_profile": { "type": "string" },
+          "overall_score": { "type": "number" },
+          "final_score": { "type": "number" },
+          "dimensions": {
+            "type": "object",
+            "additionalProperties": { "type": "number" }
+          },
+          "confidence_avg": { "enum": ["high", "medium", "low"] },
+          "security_flag": { "type": "boolean" },
+          "needs_human_review": { "type": "boolean" },
+          "rank_overall": { "type": ["integer", "null"] },
+          "rank_within_type": { "type": ["integer", "null"] },
+          "report_url": { "type": "string" }
+        }
+      }
+    }
+  }
+}

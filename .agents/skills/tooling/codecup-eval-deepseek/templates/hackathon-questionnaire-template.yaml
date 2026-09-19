@@ -1,0 +1,42 @@
+# CodeCup Business-Value Questionnaire — template
+# Each team fills this in and commits it to their submission repo.
+# It is scored by a DETERMINISTIC checklist (not by LLM opinion):
+#   - is each field present?           (+)
+#   - is the impact quantified with a number? (+)
+#   - is a named sponsor / user group given?  (+)
+#   - is adoption evidence provided?          (+)
+# See references/03-scoring-rubric.md § D6.
+
+submission_id: "team-alpha-pdf-skill"
+
+problem_statement: >
+  Mortgage back-office staff manually extract and re-key data from thousands of
+  PDF forms per quarter, which is slow and error-prone.
+
+target_users:
+  - "Mortgage Operations (Back Office)"
+  - "Compliance Review team"
+
+quantified_impact:
+  metric: "manual hours saved per analyst per week"
+  value: 6.5
+  unit: "hours"
+  basis: "Time-and-motion sample of 12 analysts over 2 weeks (see docs/measurement.md)"
+
+adoption_evidence:
+  - "Piloted with 3 analysts in Q3; positive feedback"
+  - "2 downstream teams on the waiting list"
+
+sponsor: "Jane Doe (Head of Mortgage Ops)"
+
+scope_of_reuse: >
+  The extraction pattern generalizes to any structured PDF form across the
+  Retail and Commercial divisions.
+
+dependencies:
+  - "Internal OCR service (approved)"
+  - "No external network calls"
+
+risks_and_limitations: >
+  Accuracy depends on form layout stability; low-confidence extractions require
+  human confirmation.

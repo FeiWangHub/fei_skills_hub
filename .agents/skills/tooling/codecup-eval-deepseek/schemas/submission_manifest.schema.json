@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codecup.internal/schemas/submission_manifest.schema.json",
+  "title": "CodeCup Submission Manifest",
+  "description": "Frozen list of all hackathon submissions. Produced by the organizer and locked before scoring. One entry per submitting team/repo.",
+  "type": "object",
+  "required": ["manifest_version", "created_at", "submissions"],
+  "additionalProperties": false,
+  "properties": {
+    "manifest_version": { "type": "string", "examples": ["1.0"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "total_submissions": { "type": "integer", "minimum": 0 },
+    "submissions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["submission_id", "project_name", "repo_url", "artifact_type", "commit_sha"],
+        "additionalProperties": false,
+        "properties": {
+          "submission_id": { "type": "string", "description": "Stable unique id, e.g. team-name-project" },
+          "project_name": { "type": "string" },
+          "team": { "type": "string" },
+          "contact": { "type": "string", "description": "Submitter email/handle" },
+          "repo_url": { "type": "string", "description": "Internal Git URL" },
+          "track": { "type": "string", "description": "Business/technology track label" },
+          "artifact_type": {
+            "enum": ["skill", "copilot_agent", "opencode_agent", "source_project"]
+          },
+          "artifact_type_override": {
+            "type": ["string", "null"],
+            "description": "Human-set override when auto-classification is ambiguous",
+            "enum": ["skill", "copilot_agent", "opencode_agent", "source_project", null]
+          },
+          "commit_sha": { "type": "string", "description": "Frozen submission snapshot; scoring targets this" },
+          "entry_path": { "type": ["string", "null"], "description": "Path to entry file within repo, if non-standard" },
+          "questionnaire_path": { "type": ["string", "null"], "description": "Path to filled hackathon questionnaire" },
+          "submitted_at": { "type": ["string", "null"], "format": "date-time" }
+        }
+      }
+    }
+  }
+}

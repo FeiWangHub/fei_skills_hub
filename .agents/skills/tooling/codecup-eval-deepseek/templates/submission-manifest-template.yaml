@@ -1,0 +1,45 @@
+# CodeCup Submission Manifest — template
+# Freeze this file before scoring. Scoring targets the commit_sha snapshot, never the live branch.
+manifest_version: "1.0"
+created_at: "2026-09-13T00:00:00Z"
+total_submissions: 3
+
+submissions:
+  - submission_id: "team-alpha-pdf-skill"
+    project_name: "PDF Form Filler"
+    team: "Team Alpha"
+    contact: "alpha@internal"
+    repo_url: "https://git.internal/teams/alpha/pdf-form-filler"
+    track: "Back Office Automation"
+    artifact_type: "skill"
+    artifact_type_override: null
+    commit_sha: "abc123def456"
+    entry_path: "pdf-form-filler/SKILL.md"
+    questionnaire_path: "docs/codecup-questionnaire.yaml"
+    submitted_at: "2026-09-10T09:30:00Z"
+
+  - submission_id: "team-beta-review-agent"
+    project_name: "PR Review Copilot Agent"
+    team: "Team Beta"
+    contact: "beta@internal"
+    repo_url: "https://git.internal/teams/beta/pr-review-agent"
+    track: "Developer Productivity"
+    artifact_type: "copilot_agent"
+    artifact_type_override: null
+    commit_sha: "def456abc123"
+    entry_path: ".github/agents/pr-reviewer.agent.md"
+    questionnaire_path: "docs/codecup-questionnaire.yaml"
+    submitted_at: "2026-09-11T14:05:00Z"
+
+  - submission_id: "team-gamma-recon-service"
+    project_name: "Reconciliation Service"
+    team: "Team Gamma"
+    contact: "gamma@internal"
+    repo_url: "https://git.internal/teams/gamma/recon-service"
+    track: "Risk & Compliance"
+    artifact_type: "source_project"
+    artifact_type_override: null
+    commit_sha: "0011aabb22cc"
+    entry_path: null
+    questionnaire_path: "docs/codecup-questionnaire.yaml"
+    submitted_at: "2026-09-12T08:00:00Z"

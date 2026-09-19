@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "repo": {
+    "slug": "team-alpha-pdf-skill",
+    "url": "https://git.internal/teams/alpha/pdf-form-filler",
+    "commit_sha": "abc123def456",
+    "artifact_type": "skill",
+    "track": "Back Office Automation",
+    "scanned_at": "2026-09-13T10:00:00Z"
+  },
+  "provenance": {
+    "orchestrator_version": "0.3",
+    "rubric_version": "1.0",
+    "prompt_version": "r1.0-p3",
+    "weight_profile": "skill",
+    "model_id": "internal-llm-v2",
+    "model_version": "2026-08",
+    "tool_versions": { "spec_linter": "1.0", "secret_scanner": "1.0" }
+  },
+  "gate_result": {
+    "status": "pass",
+    "schema_violations": [],
+    "security_hits": []
+  },
+  "hard_fail": { "triggered": false, "reasons": [], "score_cap": null },
+  "dimensions": {
+    "security_compliance": { "score": 15, "max": 15, "method": "deterministic", "confidence": "high", "evidence": [{ "rule": "no_secrets", "file_path": null, "line": null, "detail": "No credentials or exfiltration patterns found" }] },
+    "spec_structural":     { "score": 13, "max": 15, "method": "deterministic", "confidence": "high", "evidence": [{ "rule": "name_kebab", "file_path": "SKILL.md", "line": 1, "detail": "name matches directory" }] },
+    "code_content_quality":{ "score": 16, "max": 20, "method": "hybrid", "confidence": "medium", "evidence": [{ "file_path": "SKILL.md", "line": "40-72", "note": "Clear decision tree; minor redundancy" }], "reasoning": "Strong workflow, some filler in intro." },
+    "documentation":       { "score": 12, "max": 15, "method": "hybrid", "confidence": "high", "evidence": [{ "file_path": "SKILL.md", "line": 2, "note": "Description states WHAT+WHEN" }] },
+    "testing_reliability": { "score": 6, "max": 10, "method": "deterministic", "confidence": "high", "evidence": [{ "rule": "evals_present", "file_path": "evals/evals.json", "line": null, "detail": "Eval set present" }] },
+    "business_value":      { "score": 12, "max": 15, "method": "deterministic", "confidence": "high", "evidence": [{ "rule": "quantified", "file_path": "docs/codecup-questionnaire.yaml", "line": null, "detail": "6.5 hours/week quantified" }] },
+    "innovation":          { "score": 7, "max": 10, "method": "llm", "confidence": "medium", "evidence": [{ "file_path": "SKILL.md", "line": "88-104", "note": "Non-obvious fallback strategy" }] }
+  },
+  "overall_score": 81,
+  "dynamic": null,
+  "final_score": 81,
+  "security_flag": false,
+  "needs_human_review": false,
+  "human_review_reasons": [],
+  "human_review_status": "not_needed",
+  "human_review_notes": null,
+  "rank_overall": 3,
+  "rank_within_type": 1,
+  "strengths": ["Clear progressive disclosure", "Quantified business impact"],
+  "weaknesses": ["Intro has filler", "Eval coverage thin"],
+  "observations_not_scored": ["Could be split into two skills"],
+  "artifacts": { "transcript_path": "transcripts/team-alpha-pdf-skill.md", "report_path": "reports/team-alpha-pdf-skill.html" }
+}

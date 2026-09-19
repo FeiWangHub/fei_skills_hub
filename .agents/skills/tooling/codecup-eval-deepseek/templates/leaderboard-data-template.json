@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-09-13T12:00:00Z",
+  "rubric_version": "1.0",
+  "weight_profile_version": "1.0",
+  "summary": {
+    "total_submissions": 152,
+    "gate_pass_count": 148,
+    "gate_fail_count": 4,
+    "dynamic_evaluated_count": 0,
+    "by_artifact_type": {
+      "skill": 88,
+      "copilot_agent": 34,
+      "opencode_agent": 18,
+      "source_project": 12
+    },
+    "score_distribution": { "min": 22, "max": 94, "median": 68, "p90": 85 }
+  },
+  "entries": [
+    {
+      "submission_id": "team-alpha-pdf-skill",
+      "project_name": "PDF Form Filler",
+      "team": "Team Alpha",
+      "track": "Back Office Automation",
+      "artifact_type": "skill",
+      "weight_profile": "skill",
+      "overall_score": 81,
+      "final_score": 81,
+      "dimensions": {
+        "security_compliance": 15,
+        "spec_structural": 13,
+        "code_content_quality": 16,
+        "documentation": 12,
+        "testing_reliability": 6,
+        "business_value": 12,
+        "innovation": 7
+      },
+      "confidence_avg": "medium",
+      "security_flag": false,
+      "needs_human_review": false,
+      "rank_overall": 3,
+      "rank_within_type": 1,
+      "report_url": "reports/team-alpha-pdf-skill.html"
+    },
+    {
+      "submission_id": "team-beta-review-agent",
+      "project_name": "PR Review Copilot Agent",
+      "team": "Team Beta",
+      "track": "Developer Productivity",
+      "artifact_type": "copilot_agent",
+      "weight_profile": "copilot_agent",
+      "overall_score": 79,
+      "final_score": 79,
+      "dimensions": {
+        "security_compliance": 15,
+        "spec_structural": 14,
+        "code_content_quality": 17,
+        "documentation": 8,
+        "testing_reliability": 11,
+        "business_value": 10,
+        "innovation": 4
+      },
+      "confidence_avg": "high",
+      "security_flag": false,
+      "needs_human_review": false,
+      "rank_overall": 5,
+      "rank_within_type": 1,
+      "report_url": "reports/team-beta-review-agent.html"
+    }
+  ]
+}

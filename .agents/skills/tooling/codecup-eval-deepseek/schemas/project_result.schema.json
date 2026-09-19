@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codecup.internal/schemas/project_result.schema.json",
+  "title": "CodeCup Project Result",
+  "description": "Final aggregated scoring record for one submission. Produced by the trusted orchestrator (never by the judge LLM).",
+  "type": "object",
+  "required": ["schema_version", "repo", "provenance", "hard_fail", "dimensions", "overall_score", "final_score"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string" },
+    "repo": {
+      "type": "object",
+      "required": ["slug", "url", "commit_sha", "artifact_type"],
+      "additionalProperties": false,
+      "properties": {
+        "slug": { "type": "string" },
+        "url": { "type": "string" },
+        "commit_sha": { "type": "string" },
+        "artifact_type": { "enum": ["skill", "copilot_agent", "opencode_agent", "source_project"] },
+        "track": { "type": ["string", "null"] },
+        "scanned_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["rubric_version", "prompt_version", "model_id"],
+      "additionalProperties": false,
+      "properties": {
+        "orchestrator_version": { "type": "string" },
+        "rubric_version": { "type": "string" },
+        "prompt_version": { "type": "string" },
+        "weight_profile": { "type": "string", "examples": ["skill", "copilot_agent", "opencode_agent", "source_project"] },
+        "model_id": { "type": "string" },
+        "model_version": { "type": ["string", "null"] },
+        "tool_versions": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "gate_result": {
+      "type": "object",
+      "properties": {
+        "status": { "enum": ["pass", "fail"] },
+        "schema_violations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rule": { "type": "string" },
+              "severity": { "enum": ["hard_fail", "warn"] },
+              "detail": { "type": "string" },
+              "file_path": { "type": ["string", "null"] },
+              "line": { "type": ["integer", "null"] }
+            }
+          }
+        },
+        "security_hits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "category": { "type": "string" },
+              "severity": { "enum": ["auto_fail", "warn"] },
+              "signature_matched": { "type": "string" },
+              "file_path": { "type": ["string", "null"] },
+              "line": { "type": ["integer", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "hard_fail": {
+      "type": "object",
+      "required": ["triggered"],
+      "properties": {
+        "triggered": { "type": "boolean" },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "score_cap": { "type": ["number", "null"], "description": "Max overall score when gated, e.g. 40" }
+      }
+    },
+    "dimensions": {
+      "type": "object",
+      "description": "Keyed by dimension id; values per dimension.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["score", "max", "method"],
+        "properties": {
+          "score": { "type": "number", "minimum": 0 },
+          "max": { "type": "number", "minimum": 0 },
+          "method": { "enum": ["deterministic", "hybrid", "llm"] },
+          "confidence": { "enum": ["high", "medium", "low"] },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rule": { "type": ["string", "null"] },
+                "file_path": { "type": ["string", "null"] },
+                "line": { "type": ["string", "integer", "null"] },
+                "note": { "type": ["string", "null"] },
+                "detail": { "type": ["string", "null"] }
+              }
+            }
+          },
+          "reasoning": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "overall_score": { "type": "number", "minimum": 0, "maximum": 100, "description": "Static score (sum of dimension scores)" },
+    "dynamic": {
+      "type": ["object", "null"],
+      "properties": {
+        "evaluated": { "type": "boolean" },
+        "skill_lift": { "type": ["number", "null"] },
+        "verdict": { "type": ["string", "null"], "enum": ["PASS", "NEUTRAL", "FAIL", null] },
+        "metrics": { "type": "object" },
+        "modifier": { "type": ["number", "null"] }
+      }
+    },
+    "final_score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "security_flag": { "type": "boolean" },
+    "needs_human_review": { "type": "boolean" },
+    "human_review_reasons": { "type": "array", "items": { "type": "string" } },
+    "human_review_status": { "enum": ["not_needed", "pending", "resolved"] },
+    "human_review_notes": { "type": ["string", "null"] },
+    "rank_overall": { "type": ["integer", "null"] },
+    "rank_within_type": { "type": ["integer", "null"] },
+    "strengths": { "type": "array", "items": { "type": "string" } },
+    "weaknesses": { "type": "array", "items": { "type": "string" } },
+    "observations_not_scored": { "type": "array", "items": { "type": "string" } },
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "transcript_path": { "type": ["string", "null"], "description": "Audit-only; never published" },
+        "report_path": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
