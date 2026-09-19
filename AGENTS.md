@@ -48,7 +48,7 @@ fei_skills_hub/
 ├── .github/
 │   ├── copilot-instructions.md # GitHub Copilot workspace config
 │   └── workflows/              # CI/CD workflows
-├── artifacts/                  # Presentation and build artifacts
+├── code-cup-eval-artifacts/    # Code Cup evaluation runs and presentation artifacts
 ├── docs/                       # Extra documentation (top-100 skills list)
 ├── init-dot-agents.sh          # macOS/Linux initializer script
 ├── init-dot-agents.ps1         # Windows initializer script

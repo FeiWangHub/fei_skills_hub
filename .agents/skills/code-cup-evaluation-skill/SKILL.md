@@ -390,7 +390,7 @@ Full command reference, the `judge-scores.json` shape, and failure behaviour are
 
 ### Where results are written
 
-Everything lands under `--out` (default `./out`): `execution-state.json` is the machine-readable source of truth, and `reports/` holds `index.html` (dashboard) plus one `<submission_id>.html` per submission, linked from the dashboard. The HTML is rendered deterministically from the JSON, so the two cannot disagree. Point `--out` at a folder under `artifacts/` to keep a run in the repository.
+Everything lands under `--out` (default `./out`): `execution-state.json` is the machine-readable source of truth, and `reports/` holds `index.html` (dashboard) plus one `<submission_id>.html` per submission, linked from the dashboard. The HTML is rendered deterministically from the JSON, so the two cannot disagree. Point `--out` at a folder under `code-cup-eval-artifacts/` to keep a run in the repository.
 
 Reports are self-contained — no CDN, no external fonts, no network needed to view them — and every interpolated value is HTML-escaped, so a hostile repository or team name cannot inject markup.
 
@@ -404,7 +404,7 @@ The host-agent judging phase is timed by deriving it from the `prepare` and `mer
 
 Counts and durations are formatted for reading: thousands grouped (`36,866`), sub-second durations in milliseconds (`31.0ms`), longer ones in seconds or minutes.
 
-Sample runs committed under `artifacts/code-cup-eval-artifacts/` show the shape of a completed evaluation.
+Sample runs committed under `code-cup-eval-artifacts/` at the repository root show the shape of a completed evaluation.
 
 ### What the orchestrator computes without an LLM
 
