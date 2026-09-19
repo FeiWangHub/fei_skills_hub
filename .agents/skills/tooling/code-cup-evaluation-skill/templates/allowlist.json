@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "metadata": {
+    "author": "Fei Engineering",
+    "organization": "Fei Engineering",
+    "date": "September 2026",
+    "status": "draft",
+    "skill": "code-cup-evaluation-skill",
+    "skill_version": "0.1.0",
+    "description": "Default-deny egress policy for the Code Cup evaluation pipeline."
+  },
+  "allowed_domains": [
+    ".example",
+    "git.internal.example",
+    "llm.internal.example",
+    "reports.internal.example"
+  ],
+  "blocked_domains": [
+    "github.com",
+    "gitlab.com",
+    "npmjs.com",
+    "pypi.org",
+    "huggingface.co",
+    "openai.com",
+    "anthropic.com",
+    "googleapis.com"
+  ],
+  "policy": "default-deny; only internal and approved example domains are allowed"
+}
