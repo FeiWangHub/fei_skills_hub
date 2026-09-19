@@ -16,8 +16,11 @@ body {
 h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
 h2 { font-size: 1.05rem; margin: 2rem 0 .75rem; color: #b8bcc4; font-weight: 600; }
 .sub { color: #8b909a; font-size: .85rem; margin-bottom: 2rem; }
+/* Wide tables scroll horizontally instead of clipping their last columns. */
+.scroll { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: .875rem; }
-th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid #262a33; }
+th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid #262a33;
+         white-space: nowrap; }
 th { color: #9aa0aa; font-weight: 600; font-size: .78rem;
      text-transform: uppercase; letter-spacing: .04em; }
 tr:hover td { background: #161a21; }
@@ -65,26 +68,32 @@ ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
   </dl>
 </div>
 <h2>Dimension scores</h2>
+<div class="scroll">
 <table>
   <thead><tr><th>Dimension</th><th class="num">Band</th><th>Scale</th></tr></thead>
   <tbody><tr><td>Security and compliance</td><td class="num">3.0</td><td><div class="bar"><span style="width:60%"></span></div></td></tr><tr><td>Structure and conformance</td><td class="num">5.0</td><td><div class="bar"><span style="width:100%"></span></div></td></tr><tr><td>Code and content quality</td><td class="num">0.0</td><td><div class="bar"><span style="width:0%"></span></div></td></tr><tr><td>Documentation</td><td class="num">5.0</td><td><div class="bar"><span style="width:100%"></span></div></td></tr><tr><td>Testing and reliability</td><td class="num">3.0</td><td><div class="bar"><span style="width:60%"></span></div></td></tr><tr><td>Business value</td><td class="num">0.0</td><td><div class="bar"><span style="width:0%"></span></div></td></tr><tr><td>Innovation</td><td class="num">0.0</td><td><div class="bar"><span style="width:0%"></span></div></td></tr></tbody>
 </table>
+</div>
 <h2>Cost and timing</h2>
+<div class="scroll">
 <table>
   <thead><tr><th>Stage</th><th class="num">Elapsed</th><th class="num">Tokens</th><th>Source</th></tr></thead>
-  <tbody><tr><td>classify</td><td class="num">0.0s</td><td class="num">0</td><td>none</td></tr><tr><td>static_scan</td><td class="num">0.032s</td><td class="num">36866</td><td>estimated</td></tr><tr><td>deterministic_scoring</td><td class="num">0.002s</td><td class="num">0</td><td>none</td></tr></tbody>
+  <tbody><tr><td>classify</td><td class="num">0.00ms</td><td class="num">0</td><td>none</td></tr><tr><td>static_scan</td><td class="num">30.0ms</td><td class="num">36,866</td><td>estimated</td></tr><tr><td>deterministic_scoring</td><td class="num">1.0ms</td><td class="num">0</td><td>none</td></tr></tbody>
 </table>
+</div>
 <p class="sub">
-  Total 0.034s &nbsp;·&nbsp;
-  36866 tokens (<code>estimated</code>) &nbsp;·&nbsp;
+  Total 31.0ms &nbsp;·&nbsp;
+  36,866 tokens (<code>estimated</code>) &nbsp;·&nbsp;
   <code>measured</code> means the endpoint reported it;
   <code>estimated</code> is a character heuristic for stages that call no model.
 </p>
 <h2>Static gate findings</h2>
+<div class="scroll">
 <table>
   <thead><tr><th>Severity</th><th>Category</th><th>File</th><th class="num">Line</th></tr></thead>
   <tbody><tr><td>review</td><td>injection:ignore_instructions</td><td><code>templates/static-scan-checklist.md</code></td><td class="num">24</td></tr><tr><td>review</td><td>injection:force_full_score</td><td><code>templates/static-scan-checklist.md</code></td><td class="num">24</td></tr><tr><td>review</td><td>network:external_host:json-schema.org</td><td><code>templates/result.schema.json</code></td><td class="num">2</td></tr><tr><td>review</td><td>secret:aws_access_key</td><td><code>code/tests/test_gates.py</code></td><td class="num">97</td></tr><tr><td>review</td><td>secret:anthropic_key</td><td><code>code/tests/test_gates.py</code></td><td class="num">98</td></tr><tr><td>review</td><td>secret:generic_secret</td><td><code>code/tests/test_gates.py</code></td><td class="num">98</td></tr><tr><td>review</td><td>injection:ignore_instructions</td><td><code>code/tests/test_gates.py</code></td><td class="num">149</td></tr><tr><td>review</td><td>injection:force_full_score</td><td><code>code/tests/test_gates.py</code></td><td class="num">149</td></tr><tr><td>review</td><td>network:external_host:api.evil.com</td><td><code>code/tests/test_gates.py</code></td><td class="num">57</td></tr><tr><td>review</td><td>network:external_host:api.someexternalvendor.com</td><td><code>code/tests/test_gates.py</code></td><td class="num">99</td></tr><tr><td>review</td><td>network:external_host:api.evil.com</td><td><code>code/tests/test_pipeline.py</code></td><td class="num">179</td></tr><tr><td>review</td><td>network:external_host:evil.com</td><td><code>code/tests/test_pipeline.py</code></td><td class="num">189</td></tr></tbody>
 </table>
+</div>
 <h2>Cited evidence</h2>
 <ul class="evidence"><li><code>templates/static-scan-checklist.md</code> 24 — flagged for review: injection:ignore_instructions</li><li><code>templates/static-scan-checklist.md</code> 24 — flagged for review: injection:force_full_score</li><li><code>templates/result.schema.json</code> 2 — flagged for review: network:external_host:json-schema.org</li><li><code>code/tests/test_gates.py</code> 97 — flagged for review: secret:aws_access_key</li><li><code>code/tests/test_gates.py</code> 98 — flagged for review: secret:anthropic_key</li><li><code>SKILL.md</code> - — required skill marker present</li><li><code>skill.md</code> - — required skill marker present</li><li><code>code/README.md</code> - — documentation file</li><li><code>code/tests/test_deterministic_scorer.py</code> - — test file</li><li><code>code/tests/test_gates.py</code> - — test file</li><li><code>code/tests/test_pipeline.py</code> - — test file</li></ul>
 <h2>Provenance</h2>
@@ -93,7 +102,7 @@ ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
     <dt>Rubric version</dt><dd>unversioned</dd>
     <dt>Prompt version</dt><dd>unversioned</dd>
     <dt>Model version</dt><dd>not-run</dd>
-    <dt>Scanned at</dt><dd>2026-09-19T01:48:26.354302+00:00</dd>
+    <dt>Scanned at</dt><dd>2026-09-19T02:08:34.416751+00:00</dd>
   </dl>
 </div>
 

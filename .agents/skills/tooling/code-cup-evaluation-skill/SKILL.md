@@ -202,43 +202,34 @@ This reduces variance between reviewers and makes LLM output more stable.
 
 ## Official Standards to Reference
 
-This skill should reference the relevant official specs as validation sources, but the implementation should prefer local copies or extracted excerpts when the environment is air-gapped. The primary references are:
+Reference the official specs as validation sources, but prefer locally stored copies or extracted excerpts when the environment is air-gapped:
 
-- Anthropic / Claude: Skill schema and agent conventions, used as a reference for artifact validation and quality checks
-- GitHub Copilot: custom agent and instruction-file schema conventions, used for repository classification and structure validation
-- OpenCode: agent definition structure and tool/metadata rules, used for artifact-type detection and compatibility checks
+- Anthropic / Claude — Skill schema and agent conventions, for artifact validation and quality checks
+- GitHub Copilot — custom agent and instruction-file schema, for classification and structure validation
+- OpenCode — agent definition structure and tool/metadata rules, for artifact-type detection
 
-These references should be treated as specification inputs, not as runtime network dependencies. If the environment cannot reach those external sites directly, the skill should rely on a locally stored extracted copy or an internal documentation mirror.
+Treat these as specification inputs, not runtime network dependencies. If the environment cannot reach them, use a local copy or an internal documentation mirror.
 
 ## Static Security Scan Requirements
 
-Before any LLM evaluation, every submission should pass a deterministic static scan. The scanner should at minimum detect:
+Every submission passes a deterministic static scan before any LLM evaluation. The scanner must detect hard-coded credentials (API keys, OAuth tokens, cloud keys, JWTs, private keys), suspicious URLs and outbound calls to non-approved domains, insecure network behaviour in config/scripts/CI, prompt-injection patterns in README or skill metadata, PII and internal-host leakage, and dangerous shell or package-install commands.
 
-- hard-coded credentials and secrets (API keys, OAuth tokens, cloud keys, JWTs, private keys)
-- suspicious URLs and outbound calls to non-approved domains
-- insecure network behavior in config files, scripts, CI pipelines, and app settings
-- prompt-injection patterns in README or skill metadata
-- PII and internal-host leakage
-- dangerous shell or package-install commands that could exfiltrate data or reach unknown endpoints
+Layer external tooling on top for recall: `gitleaks` for credentials, `trufflehog` for secret detection, `semgrep` for risky patterns, plus custom checks for internal-domain restrictions and `.env` / CI secret files.
 
-Recommended tooling for a first pass:
+The scan must be non-invasive: it reads source files and metadata but never executes submission code and never connects to arbitrary external websites.
 
-- `gitleaks` for credential scanning
-- `trufflehog` or equivalent secret detection
-- `semgrep` for risky patterns and injection signatures
-- custom regex / YAML / JSON checks for internal-domain restrictions and suspicious endpoints
-- repository-level checks for `.env`, credentials files, CI secrets, and embedded tokens
+### Context matters for severity
 
-The static scan must be non-invasive: it reads source files and metadata but does not execute submission code and does not connect to arbitrary external websites.
+The same string is a genuine risk in executable code but routine elsewhere — a test fixture is expected to contain fake credentials, a security document describes the patterns it detects, and a JSON Schema `$schema` value is an identifier rather than an egress attempt. Treating all of these as hard failures makes the gate unusable on any repository that documents security. Severity is therefore resolved by file context; see `references/deterministic-scoring.md` and the module docstring in `code/static_scanner.py`.
 
 ### Required gate behavior
 
 The static gate must fail closed:
 
-- if a credential is found, mark `hard-failed`
-- if a suspicious external domain is found, mark `hard-failed` unless it is explicitly on the approved allowlist
-- if prompt injection content is found in README / skill / agent metadata, escalate to human review
-- if the repository contains telemetry or network calls to unapproved domains, block the submission before the LLM stage
+- a credential in executable code or config → `hard-failed`
+- an unapproved external destination in executable code or config → `hard-failed`
+- prompt injection in README / skill / agent metadata → escalate to human review
+- the same patterns in tests, documentation, or templates → review, never silently dropped
 
 ## Network Egress Policy
 
@@ -320,21 +311,7 @@ A practical starting point is around 8–16 parallel LLM workers for a 150-submi
 - state persistence across crash and restart
 - exponential backoff and jittered retry
 - dead-letter queue for permanent failures
-- provenance metadata appended to each result
-
-### Provenance fields
-
-Each output should include:
-
-- repo name or identifier
-- commit SHA
-- scanned_at
-- model_id
-- model_version
-- prompt_version
-- rubric_version
-- orchestrator_version
-- tool_versions
+- provenance metadata appended to each result: repo identifier, commit SHA, `scanned_at`, `model_id`, `model_version`, `prompt_version`, `rubric_version`, `orchestrator_version`, `tool_versions`
 
 ## Data and Output Contract
 
@@ -381,11 +358,25 @@ PYTHONPATH=. python3 orchestrator.py \
 
 Output is written to `out/execution-state.json`, with HTML in `out/reports/` (`index.html` plus one page per submission, linked from the dashboard). Pass `--no-report` to skip rendering.
 
+### Where results are written
+
+Everything lands under `--out` (default `./out`): `execution-state.json` is the machine-readable source of truth, and `reports/` holds `index.html` (dashboard) plus one `<submission_id>.html` per submission, linked from the dashboard. The HTML is rendered deterministically from the JSON, so the two cannot disagree.
+
+To keep a run in the repository, point `--out` at a folder under `artifacts/`:
+
+```bash
+--out ../../../artifacts/codecup-eval-<run-name>
+```
+
+Reports are self-contained — no CDN, no external fonts, no network needed to view them — and every interpolated value is HTML-escaped, so a hostile repository or team name cannot inject markup.
+
 ### Cost and timing metrics
 
 Every run records what each stage cost, so two scoring configurations can be compared directly. `out/execution-state.json` carries a batch `cost` block plus a `metrics` block per submission, and each report page renders a "Cost and timing" table.
 
 Token figures are never conflated: `measured` means the endpoint's `usage` field reported it, `estimated` is a character heuristic for stages that call no model, and `none` means the stage ran without producing a figure. A run with `measured_tokens: 0` and `total_tokens > 0` means no model was called at all — the repository was processed entirely by the static and deterministic layers. The `judge` stage is absent from the metrics rather than recorded as zero when it does not run. See `references/cost-and-timing.md`.
+
+Token counts and durations are formatted for reading in the reports: thousands are grouped (`36,866`), sub-second durations render in milliseconds (`31.0ms`), and longer ones in seconds or minutes.
 
 ### What the orchestrator computes without an LLM
 

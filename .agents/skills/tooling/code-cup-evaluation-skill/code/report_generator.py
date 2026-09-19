@@ -43,8 +43,11 @@ body {
 h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
 h2 { font-size: 1.05rem; margin: 2rem 0 .75rem; color: #b8bcc4; font-weight: 600; }
 .sub { color: #8b909a; font-size: .85rem; margin-bottom: 2rem; }
+/* Wide tables scroll horizontally instead of clipping their last columns. */
+.scroll { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: .875rem; }
-th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid #262a33; }
+th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid #262a33;
+         white-space: nowrap; }
 th { color: #9aa0aa; font-weight: 600; font-size: .78rem;
      text-transform: uppercase; letter-spacing: .04em; }
 tr:hover td { background: #161a21; }
@@ -76,6 +79,36 @@ ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
 
 def _escape(value: object) -> str:
     return html.escape(str(value if value is not None else ""), quote=True)
+
+
+def _format_int(value: object) -> str:
+    """Group thousands so large token counts stay readable.
+
+    `36866` is hard to parse at a glance; `36,866` is not. Falls back to the
+    raw value when the input is not a number.
+    """
+    try:
+        return f"{int(value):,}"
+    except (TypeError, ValueError):
+        return _escape(value)
+
+
+def _format_seconds(value: object) -> str:
+    """Render a duration at a readable precision, grouped where needed."""
+    try:
+        seconds = float(value)
+    except (TypeError, ValueError):
+        return _escape(value)
+
+    if seconds >= 60:
+        minutes = int(seconds // 60)
+        remainder = seconds - minutes * 60
+        return f"{minutes}m {remainder:.1f}s"
+    if seconds >= 1:
+        return f"{seconds:.2f}s"
+    if seconds >= 0.001:
+        return f"{seconds * 1000:.1f}ms"
+    return f"{seconds * 1000:.2f}ms"
 
 
 def _render_page(title: str, body: str) -> str:
@@ -148,8 +181,8 @@ def render_submission_report(record: dict[str, object]) -> str:
     stage_rows = "".join(
         "<tr>"
         f"<td>{_escape(stage.get('name'))}</td>"
-        f'<td class="num">{_escape(stage.get("elapsed_s"))}s</td>'
-        f'<td class="num">{_escape((stage.get("tokens") or {}).get("total_tokens", 0))}</td>'
+        f'<td class="num">{_format_seconds(stage.get("elapsed_s"))}</td>'
+        f'<td class="num">{_format_int((stage.get("tokens") or {}).get("total_tokens", 0))}</td>'
         f"<td>{_escape((stage.get('tokens') or {}).get('source'))}</td>"
         "</tr>"
         for stage in (metrics.get("stages") or [])
@@ -178,26 +211,32 @@ def render_submission_report(record: dict[str, object]) -> str:
   </dl>
 </div>
 <h2>Dimension scores</h2>
+<div class="scroll">
 <table>
   <thead><tr><th>Dimension</th><th class="num">Band</th><th>Scale</th></tr></thead>
   <tbody>{''.join(rows)}</tbody>
 </table>
+</div>
 <h2>Cost and timing</h2>
+<div class="scroll">
 <table>
   <thead><tr><th>Stage</th><th class="num">Elapsed</th><th class="num">Tokens</th><th>Source</th></tr></thead>
   <tbody>{stage_rows}</tbody>
 </table>
+</div>
 <p class="sub">
-  Total {_escape(metrics.get('total_elapsed_s', 0))}s &nbsp;·&nbsp;
-  {_escape(total_tokens)} tokens (<code>{_escape(token_source)}</code>) &nbsp;·&nbsp;
+  Total {_format_seconds(metrics.get('total_elapsed_s', 0))} &nbsp;·&nbsp;
+  {_format_int(total_tokens)} tokens (<code>{_escape(token_source)}</code>) &nbsp;·&nbsp;
   <code>measured</code> means the endpoint reported it;
   <code>estimated</code> is a character heuristic for stages that call no model.
 </p>
 <h2>Static gate findings</h2>
+<div class="scroll">
 <table>
   <thead><tr><th>Severity</th><th>Category</th><th>File</th><th class="num">Line</th></tr></thead>
   <tbody>{finding_rows}</tbody>
 </table>
+</div>
 <h2>Cited evidence</h2>
 <ul class="evidence">{evidence_items}</ul>
 <h2>Provenance</h2>
@@ -224,8 +263,16 @@ def report_filename(submission_id: object) -> str:
     return f"{safe or 'unknown'}.html"
 
 
-def render_dashboard(records: list[dict[str, object]], generated_at: str | None = None) -> str:
-    """Render the summary leaderboard, linking each row to its report page."""
+def render_dashboard(
+    records: list[dict[str, object]],
+    generated_at: str | None = None,
+    cost: dict[str, object] | None = None,
+) -> str:
+    """Render the summary leaderboard, linking each row to its report page.
+
+    When `cost` is supplied (the batch block from `execution-state.json`), the
+    aggregate time and token figures are shown in the header.
+    """
     stamp = generated_at or datetime.now(timezone.utc).isoformat()
 
     rows = []
@@ -235,6 +282,13 @@ def render_dashboard(records: list[dict[str, object]], generated_at: str | None 
         confidence = str(record.get("confidence", "low"))
         link = report_filename(record.get("submission_id"))
         team = _escape(record.get("team_name"))
+        record_metrics = record.get("metrics") or {}
+        elapsed = record_metrics.get("total_elapsed_s", 0) if isinstance(record_metrics, dict) else 0
+        tokens = (
+            (record_metrics.get("total_tokens") or {}).get("total_tokens", 0)
+            if isinstance(record_metrics, dict)
+            else 0
+        )
 
         rows.append(
             "<tr>"
@@ -244,8 +298,9 @@ def render_dashboard(records: list[dict[str, object]], generated_at: str | None 
             f'<td class="num">{_escape(record.get("total", 0))}</td>'
             f'<td><span class="badge {CONFIDENCE_CLASS.get(confidence, "conf-low")}">{_escape(confidence)}</span></td>'
             f'<td class="{"gate-pass" if passed else "gate-fail"}">{"pass" if passed else "blocked"}</td>'
-            f"<td>{_escape(record.get('state'))}</td>"
-            f'<td><a href="{_escape(link)}">details</a></td>'
+            f'<td>{_escape(record.get("state"))}</td>'
+            f'<td class="num">{_format_seconds(elapsed)}</td>'
+            f'<td class="num">{_format_int(tokens)}</td>'
             "</tr>"
         )
 
@@ -257,22 +312,35 @@ def render_dashboard(records: list[dict[str, object]], generated_at: str | None 
     )
     review = sum(1 for r in records if r.get("human_review_required"))
 
+    cost_line = ""
+    if cost:
+        cost_line = (
+            f'<br>Total {_format_seconds(cost.get("total_elapsed_s", 0))}'
+            f' &nbsp;·&nbsp; {_format_int(cost.get("total_tokens", 0))} tokens'
+            f' ({_format_int(cost.get("measured_tokens", 0))} measured,'
+            f' {_format_int(cost.get("estimated_tokens", 0))} estimated)'
+        )
+
     body = f"""
 <h1>Code Cup — Evaluation Dashboard</h1>
 <div class="sub">
   {total_count} submissions &nbsp;·&nbsp; {blocked} blocked by the static gate
   &nbsp;·&nbsp; {review} flagged for human review &nbsp;·&nbsp; generated {_escape(stamp)}
+  {cost_line}
 </div>
 <p class="sub">Select a team name to open its full report.</p>
+<div class="scroll">
 <table>
   <thead>
     <tr>
       <th class="num">#</th><th>Team</th><th>Artifact</th>
-      <th class="num">Score</th><th>Confidence</th><th>Gate</th><th>State</th><th></th>
+      <th class="num">Score</th><th>Confidence</th><th>Gate</th><th>State</th>
+      <th class="num">Time</th><th class="num">Tokens</th>
     </tr>
   </thead>
   <tbody>{''.join(rows)}</tbody>
 </table>
+</div>
 """
     return _render_page("Code Cup — Evaluation Dashboard", body)
 
@@ -286,10 +354,11 @@ def generate_reports(
     out.mkdir(parents=True, exist_ok=True)
 
     results = list(bundle.get("results", []) or [])
+    cost = bundle.get("cost") if isinstance(bundle.get("cost"), dict) else None
     written: dict[str, str] = {}
 
     dashboard_path = out / "index.html"
-    dashboard_path.write_text(render_dashboard(results), encoding="utf-8")
+    dashboard_path.write_text(render_dashboard(results, cost=cost), encoding="utf-8")
     written["dashboard"] = str(dashboard_path)
 
     for record in results:

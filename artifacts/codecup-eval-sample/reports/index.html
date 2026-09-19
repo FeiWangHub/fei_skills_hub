@@ -16,8 +16,11 @@ body {
 h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
 h2 { font-size: 1.05rem; margin: 2rem 0 .75rem; color: #b8bcc4; font-weight: 600; }
 .sub { color: #8b909a; font-size: .85rem; margin-bottom: 2rem; }
+/* Wide tables scroll horizontally instead of clipping their last columns. */
+.scroll { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: .875rem; }
-th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid #262a33; }
+th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid #262a33;
+         white-space: nowrap; }
 th { color: #9aa0aa; font-weight: 600; font-size: .78rem;
      text-transform: uppercase; letter-spacing: .04em; }
 tr:hover td { background: #161a21; }
@@ -51,18 +54,22 @@ ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
 <h1>Code Cup — Evaluation Dashboard</h1>
 <div class="sub">
   3 submissions &nbsp;·&nbsp; 0 blocked by the static gate
-  &nbsp;·&nbsp; 3 flagged for human review &nbsp;·&nbsp; generated 2026-09-19T01:48:26.402462+00:00
+  &nbsp;·&nbsp; 3 flagged for human review &nbsp;·&nbsp; generated 2026-09-19T02:08:34.462164+00:00
+  <br>Total 74.0ms &nbsp;·&nbsp; 82,903 tokens (0 measured, 82,903 estimated)
 </div>
 <p class="sub">Select a team name to open its full report.</p>
+<div class="scroll">
 <table>
   <thead>
     <tr>
       <th class="num">#</th><th>Team</th><th>Artifact</th>
-      <th class="num">Score</th><th>Confidence</th><th>Gate</th><th>State</th><th></th>
+      <th class="num">Score</th><th>Confidence</th><th>Gate</th><th>State</th>
+      <th class="num">Time</th><th class="num">Tokens</th>
     </tr>
   </thead>
-  <tbody><tr><td class="num">—</td><td><a href="TEAM_001.html">Code Cup Evaluation Skill</a></td><td>skill</td><td class="num">0</td><td><span class="badge conf-low">low</span></td><td class="gate-pass">pass</td><td>awaiting-judge</td><td><a href="TEAM_001.html">details</a></td></tr><tr><td class="num">—</td><td><a href="TEAM_002.html">CodeCup Eval DeepSeek</a></td><td>skill</td><td class="num">0</td><td><span class="badge conf-low">low</span></td><td class="gate-pass">pass</td><td>awaiting-judge</td><td><a href="TEAM_002.html">details</a></td></tr><tr><td class="num">—</td><td><a href="TEAM_003.html">CodeCup Eval Sonnet5</a></td><td>skill</td><td class="num">0</td><td><span class="badge conf-low">low</span></td><td class="gate-pass">pass</td><td>awaiting-judge</td><td><a href="TEAM_003.html">details</a></td></tr></tbody>
+  <tbody><tr><td class="num">—</td><td><a href="TEAM_001.html">Code Cup Evaluation Skill</a></td><td>skill</td><td class="num">0</td><td><span class="badge conf-low">low</span></td><td class="gate-pass">pass</td><td>awaiting-judge</td><td class="num">31.0ms</td><td class="num">36,866</td></tr><tr><td class="num">—</td><td><a href="TEAM_002.html">CodeCup Eval DeepSeek</a></td><td>skill</td><td class="num">0</td><td><span class="badge conf-low">low</span></td><td class="gate-pass">pass</td><td>awaiting-judge</td><td class="num">19.0ms</td><td class="num">21,147</td></tr><tr><td class="num">—</td><td><a href="TEAM_003.html">CodeCup Eval Sonnet5</a></td><td>skill</td><td class="num">0</td><td><span class="badge conf-low">low</span></td><td class="gate-pass">pass</td><td>awaiting-judge</td><td class="num">24.0ms</td><td class="num">24,890</td></tr></tbody>
 </table>
+</div>
 
 </body>
 </html>

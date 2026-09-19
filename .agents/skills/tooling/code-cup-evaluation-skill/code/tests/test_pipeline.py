@@ -302,6 +302,11 @@ def test_dashboard_links_to_each_report() -> None:
         "dashboard does not emit a raw unsafe path",
         "TEAM/002" not in page,
     )
+    check(
+        "team name is the only link, avoiding a duplicate details column",
+        page.count('href="TEAM_001.html"') == 1,
+        str(page.count('href="TEAM_001.html"')),
+    )
 
 
 def test_report_filename_is_shared() -> None:
@@ -364,6 +369,51 @@ def test_generate_reports_writes_linked_pages() -> None:
         check("written map includes the dashboard", "dashboard" in written)
 
 
+def test_number_formatting_is_human_readable() -> None:
+    from report_generator import _format_int, _format_seconds
+
+    check("thousands are grouped", _format_int(36866) == "36,866", _format_int(36866))
+    check("small numbers unchanged", _format_int(7) == "7", _format_int(7))
+    check("millions grouped", _format_int(1234567) == "1,234,567", _format_int(1234567))
+    check("non-numeric falls back safely", _format_int("n/a") == "n/a")
+
+    check("sub-second shown in ms", _format_seconds(0.031) == "31.0ms", _format_seconds(0.031))
+    check("seconds shown with 2dp", _format_seconds(1.5) == "1.50s", _format_seconds(1.5))
+    check("minutes broken out", _format_seconds(95.0) == "1m 35.0s", _format_seconds(95.0))
+    check("non-numeric duration falls back", _format_seconds("x") == "x")
+
+
+def test_dashboard_shows_formatted_cost() -> None:
+    records = [
+        {
+            "submission_id": "TEAM_001",
+            "team_name": "Alpha",
+            "artifact_type": "skill",
+            "total": 0,
+            "confidence": "medium",
+            "state": "awaiting-judge",
+            "human_review_required": False,
+            "static_gate": {"passed": True},
+            "metrics": {
+                "total_elapsed_s": 0.032,
+                "total_tokens": {"total_tokens": 36866, "source": "estimated"},
+            },
+        }
+    ]
+    cost = {
+        "total_elapsed_s": 0.074,
+        "total_tokens": 82903,
+        "measured_tokens": 0,
+        "estimated_tokens": 82903,
+    }
+    page = render_dashboard(records, generated_at="2026-09-19T00:00:00Z", cost=cost)
+
+    check("row tokens are grouped", "36,866" in page, "not found")
+    check("row duration is readable", "32.0ms" in page)
+    check("batch total is grouped", "82,903" in page)
+    check("measured and estimated are split", "0 measured" in page and "82,903 estimated" in page)
+
+
 def main() -> int:
     test_aggregation_median()
     test_aggregation_agreement()
@@ -378,6 +428,8 @@ def main() -> int:
     test_dashboard_links_to_each_report()
     test_report_filename_is_shared()
     test_generate_reports_writes_linked_pages()
+    test_number_formatting_is_human_readable()
+    test_dashboard_shows_formatted_cost()
 
     print()
     if FAILURES:

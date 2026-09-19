@@ -1,6 +1,6 @@
 {
   "state": {
-    "generated_at": "2026-09-19T01:48:26.400601+00:00",
+    "generated_at": "2026-09-19T02:08:34.460135+00:00",
     "total": 3,
     "hard_failed": 0,
     "awaiting_judge": 3,
@@ -14,9 +14,9 @@
   },
   "cost": {
     "submissions": 3,
-    "total_elapsed_ms": 79.51,
-    "total_elapsed_s": 0.08,
-    "mean_elapsed_ms": 26.5,
+    "total_elapsed_ms": 74.02,
+    "total_elapsed_s": 0.074,
+    "mean_elapsed_ms": 24.67,
     "total_tokens": 82903,
     "measured_tokens": 0,
     "estimated_tokens": 82903,
@@ -214,11 +214,11 @@
         "rubric_version": "unversioned",
         "prompt_version": "unversioned",
         "model_version": "not-run",
-        "scanned_at": "2026-09-19T01:48:26.354302+00:00"
+        "scanned_at": "2026-09-19T02:08:34.416751+00:00"
       },
       "metrics": {
-        "total_elapsed_ms": 33.68,
-        "total_elapsed_s": 0.034,
+        "total_elapsed_ms": 31.11,
+        "total_elapsed_s": 0.031,
         "total_tokens": {
           "prompt_tokens": 36866,
           "completion_tokens": 0,
@@ -243,8 +243,8 @@
           },
           {
             "name": "static_scan",
-            "elapsed_ms": 31.58,
-            "elapsed_s": 0.032,
+            "elapsed_ms": 30.13,
+            "elapsed_s": 0.03,
             "tokens": {
               "prompt_tokens": 36866,
               "completion_tokens": 0,
@@ -256,8 +256,8 @@
           },
           {
             "name": "deterministic_scoring",
-            "elapsed_ms": 2.08,
-            "elapsed_s": 0.002,
+            "elapsed_ms": 0.96,
+            "elapsed_s": 0.001,
             "tokens": {
               "prompt_tokens": 0,
               "completion_tokens": 0,
@@ -492,11 +492,11 @@
         "rubric_version": "unversioned",
         "prompt_version": "unversioned",
         "model_version": "not-run",
-        "scanned_at": "2026-09-19T01:48:26.376362+00:00"
+        "scanned_at": "2026-09-19T02:08:34.435976+00:00"
       },
       "metrics": {
-        "total_elapsed_ms": 21.71,
-        "total_elapsed_s": 0.022,
+        "total_elapsed_ms": 18.88,
+        "total_elapsed_s": 0.019,
         "total_tokens": {
           "prompt_tokens": 21147,
           "completion_tokens": 0,
@@ -521,8 +521,8 @@
           },
           {
             "name": "static_scan",
-            "elapsed_ms": 20.74,
-            "elapsed_s": 0.021,
+            "elapsed_ms": 18.02,
+            "elapsed_s": 0.018,
             "tokens": {
               "prompt_tokens": 21147,
               "completion_tokens": 0,
@@ -534,7 +534,7 @@
           },
           {
             "name": "deterministic_scoring",
-            "elapsed_ms": 0.96,
+            "elapsed_ms": 0.84,
             "elapsed_s": 0.001,
             "tokens": {
               "prompt_tokens": 0,
@@ -903,10 +903,10 @@
         "rubric_version": "unversioned",
         "prompt_version": "unversioned",
         "model_version": "not-run",
-        "scanned_at": "2026-09-19T01:48:26.400565+00:00"
+        "scanned_at": "2026-09-19T02:08:34.460090+00:00"
       },
       "metrics": {
-        "total_elapsed_ms": 24.12,
+        "total_elapsed_ms": 24.03,
         "total_elapsed_s": 0.024,
         "total_tokens": {
           "prompt_tokens": 24890,
@@ -932,7 +932,7 @@
           },
           {
             "name": "static_scan",
-            "elapsed_ms": 22.87,
+            "elapsed_ms": 23.03,
             "elapsed_s": 0.023,
             "tokens": {
               "prompt_tokens": 24890,
@@ -945,7 +945,7 @@
           },
           {
             "name": "deterministic_scoring",
-            "elapsed_ms": 1.25,
+            "elapsed_ms": 0.99,
             "elapsed_s": 0.001,
             "tokens": {
               "prompt_tokens": 0,
@@ -961,9 +961,9 @@
     }
   ],
   "reports": {
-    "dashboard": "/tmp/codecup-real/out/reports/index.html",
-    "TEAM_001": "/tmp/codecup-real/out/reports/TEAM_001.html",
-    "TEAM_002": "/tmp/codecup-real/out/reports/TEAM_002.html",
-    "TEAM_003": "/tmp/codecup-real/out/reports/TEAM_003.html"
+    "dashboard": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/reports/index.html",
+    "TEAM_001": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/reports/TEAM_001.html",
+    "TEAM_002": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/reports/TEAM_002.html",
+    "TEAM_003": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/reports/TEAM_003.html"
   }
 }
