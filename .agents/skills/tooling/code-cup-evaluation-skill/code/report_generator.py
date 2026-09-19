@@ -112,6 +112,25 @@ def _format_seconds(value: object) -> str:
     return f"{seconds * 1000:.2f}ms"
 
 
+def _record_total(record: dict[str, object]) -> float:
+    """Read a submission's total, tolerating both storage shapes.
+
+    The pipeline keeps it in `scores["total"]`; older and synthetic records put
+    it at the top level. A field-path mismatch here would render a scored
+    submission as zero.
+    """
+    scores = record.get("scores")
+    if isinstance(scores, dict):
+        try:
+            return float(scores.get("total", 0) or 0)
+        except (TypeError, ValueError):
+            pass
+    try:
+        return float(record.get("total", 0) or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def _render_page(title: str, body: str) -> str:
     return (
         "<!DOCTYPE html>\n"
@@ -130,7 +149,7 @@ def _render_page(title: str, body: str) -> str:
 def render_submission_report(record: dict[str, object]) -> str:
     """Render a single submission report page."""
     scores = record.get("scores") or {}
-    total = float(record.get("total", 0) or 0)
+    total = _record_total(record)
     confidence = str(record.get("confidence", "low"))
     gate = record.get("static_gate") or {}
     provenance = record.get("provenance") or {}
@@ -247,9 +266,10 @@ def render_submission_report(record: dict[str, object]) -> str:
 <p class="sub">
   Total {_format_seconds(metrics.get('total_elapsed_s', 0))} &nbsp;·&nbsp;
   {_format_int(total_tokens)} tokens (<code>{_escape(token_source)}</code>) &nbsp;·&nbsp;
-  <code>measured</code> means the endpoint reported it;
+  <code>measured</code> means the model reported it;
   <code>estimated</code> is a character heuristic for stages that call no model.
 </p>
+{_agent_phase_note(metrics)}
 <h2>Static gate findings</h2>
 <div class="scroll">
 <table>
@@ -270,6 +290,39 @@ def render_submission_report(record: dict[str, object]) -> str:
 </div>
 """
     return _render_page(f"{record.get('team_name')} — Code Cup report", body)
+
+
+def _agent_phase_note(metrics: dict[str, object]) -> str:
+    """Explain the agent phase, which cannot be measured the way stages are.
+
+    Showing its wall-clock span as if it were compute time would overstate the
+    cost, so it is reported separately and labelled.
+    """
+    wall = float(metrics.get("agent_wall_clock_s", 0) or 0)
+    if wall <= 0:
+        return ""
+
+    stages = metrics.get("stages") or []
+    agent_stage = next(
+        (s for s in stages if isinstance(s, dict) and s.get("name") == "judge_wall_clock"),
+        None,
+    )
+    tokens = (agent_stage or {}).get("tokens") or {}
+    reported = tokens.get("source") == "measured"
+
+    token_text = (
+        f"{_format_int(tokens.get('total_tokens', 0))} tokens reported by the host agent"
+        if reported
+        else "the host agent did not report token usage"
+    )
+
+    return (
+        '<p class="sub">Judging ran inside the host agent and is '
+        f"<strong>not</strong> included in the total above. "
+        f"Wall-clock from prepare to merge: {_format_seconds(wall)} "
+        "(includes idle time, so it is an upper bound rather than compute time) — "
+        f"{token_text}.</p>"
+    )
 
 
 def report_filename(submission_id: object) -> str:
@@ -315,7 +368,7 @@ def render_dashboard(
         if pending:
             score_cell = '<span class="pending">pending</span>'
         else:
-            score_cell = _escape(record.get("total", 0))
+            score_cell = _escape(_record_total(record))
 
         rows.append(
             "<tr>"

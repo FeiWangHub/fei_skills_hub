@@ -268,28 +268,90 @@ def run_full_pipeline(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Code Cup evaluation orchestrator")
-    parser.add_argument("--manifest", required=True)
-    parser.add_argument("--allowlist", required=True)
-    parser.add_argument("--repo-root", default="./submissions")
-    parser.add_argument("--out", default="./out")
-    parser.add_argument("--rubric", default=None, help="Path to score-rubric.yaml")
-    parser.add_argument(
-        "--no-report",
-        action="store_true",
-        help="Skip static HTML report generation",
+    parser = argparse.ArgumentParser(
+        description=(
+            "Code Cup evaluation pipeline. Runs inside a host agent (GitHub "
+            "Copilot, OpenCode, ...); the judging model is the host's own model."
+        )
     )
+    sub = parser.add_subparsers(dest="command")
+
+    def add_common(p: argparse.ArgumentParser) -> None:
+        p.add_argument("--out", default="./out")
+        p.add_argument("--rubric", default=None, help="Path to score-rubric.yaml")
+
+    prepare_parser = sub.add_parser(
+        "prepare",
+        help="Scan submissions and emit judge requests for the host agent",
+    )
+    prepare_parser.add_argument("--manifest", required=True)
+    prepare_parser.add_argument("--allowlist", required=True)
+    prepare_parser.add_argument("--repo-root", default="./submissions")
+    prepare_parser.add_argument("--prompt-template", default=None)
+    add_common(prepare_parser)
+
+    merge_parser = sub.add_parser(
+        "merge",
+        help="Merge the host agent's scores and render reports",
+    )
+    merge_parser.add_argument(
+        "--scores",
+        default=None,
+        help="Path to judge-scores.json (default: <out>/judge-scores.json)",
+    )
+    merge_parser.add_argument("--no-report", action="store_true")
+    add_common(merge_parser)
+
+    # Backwards-compatible single-shot mode: scan, rank and report without a
+    # judge pass. Useful for checking the deterministic layer alone.
+    scan_parser = sub.add_parser("scan-only", help="Deterministic layer only, no judge")
+    scan_parser.add_argument("--manifest", required=True)
+    scan_parser.add_argument("--allowlist", required=True)
+    scan_parser.add_argument("--repo-root", default="./submissions")
+    scan_parser.add_argument("--no-report", action="store_true")
+    add_common(scan_parser)
+
     args = parser.parse_args()
 
-    bundle = run_full_pipeline(
-        args.manifest,
-        args.allowlist,
-        args.repo_root,
-        args.out,
-        rubric_path=args.rubric,
-        report=not args.no_report,
-    )
-    print(json.dumps(bundle["state"], indent=2))
+    if args.command == "prepare":
+        from judge_io import prepare
+
+        bundle = prepare(
+            args.manifest,
+            args.allowlist,
+            args.repo_root,
+            args.out,
+            rubric_path=args.rubric,
+            prompt_template_path=args.prompt_template,
+        )
+        print(json.dumps(bundle["state"], indent=2))
+        return
+
+    if args.command == "merge":
+        from judge_io import merge
+
+        bundle = merge(
+            args.out,
+            scores_path=args.scores,
+            rubric_path=args.rubric,
+            report=not args.no_report,
+        )
+        print(json.dumps(bundle["state"], indent=2))
+        return
+
+    if args.command == "scan-only":
+        bundle = run_full_pipeline(
+            args.manifest,
+            args.allowlist,
+            args.repo_root,
+            args.out,
+            rubric_path=args.rubric,
+            report=not args.no_report,
+        )
+        print(json.dumps(bundle["state"], indent=2))
+        return
+
+    parser.print_help()
 
 
 if __name__ == "__main__":

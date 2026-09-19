@@ -164,7 +164,14 @@ def timed_stage(
 
 
 def summarize(metrics_list: list[dict[str, object]]) -> dict[str, object]:
-    """Aggregate per-submission metrics for a batch comparison."""
+    """Aggregate per-submission metrics for a batch comparison.
+
+    Measured and estimated token amounts are summed by *stage*, not by the
+    submission's merged label. A submission whose total is labelled
+    `estimated` because one stage was heuristic may still contain genuinely
+    measured tokens from another stage; bucketing the whole total by the
+    weakest label would hide them.
+    """
     total_ms = 0.0
     total_tokens = 0
     measured_tokens = 0
@@ -172,13 +179,28 @@ def summarize(metrics_list: list[dict[str, object]]) -> dict[str, object]:
 
     for metrics in metrics_list:
         total_ms += float(metrics.get("total_elapsed_ms", 0) or 0)
-        tokens = metrics.get("total_tokens") or {}
-        amount = int(tokens.get("total_tokens", 0) or 0)
-        total_tokens += amount
-        if tokens.get("source") == SOURCE_MEASURED:
-            measured_tokens += amount
-        elif tokens.get("source") == SOURCE_ESTIMATED:
-            estimated_tokens += amount
+
+        stages = metrics.get("stages")
+        if isinstance(stages, list) and stages:
+            for stage in stages:
+                if not isinstance(stage, dict):
+                    continue
+                tokens = stage.get("tokens") or {}
+                amount = int(tokens.get("total_tokens", 0) or 0)
+                total_tokens += amount
+                if tokens.get("source") == SOURCE_MEASURED:
+                    measured_tokens += amount
+                elif tokens.get("source") == SOURCE_ESTIMATED:
+                    estimated_tokens += amount
+        else:
+            # No stage detail: fall back to the merged total.
+            tokens = metrics.get("total_tokens") or {}
+            amount = int(tokens.get("total_tokens", 0) or 0)
+            total_tokens += amount
+            if tokens.get("source") == SOURCE_MEASURED:
+                measured_tokens += amount
+            elif tokens.get("source") == SOURCE_ESTIMATED:
+                estimated_tokens += amount
 
     count = len(metrics_list)
     return {
@@ -190,8 +212,7 @@ def summarize(metrics_list: list[dict[str, object]]) -> dict[str, object]:
         "measured_tokens": measured_tokens,
         "estimated_tokens": estimated_tokens,
         "note": (
-            "measured_tokens come from the endpoint's usage field; "
-            "estimated_tokens come from a character heuristic for stages that "
-            "make no model call"
+            "measured_tokens were reported by the model/endpoint; "
+            "estimated_tokens are a character heuristic for stages that call no model"
         ),
     }

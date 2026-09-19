@@ -262,42 +262,44 @@ The authoritative field-level contract is `templates/result.schema.json` — rea
 
 The orchestrator must reject any result object that violates the contract, or that reports a positive score without accompanying evidence.
 
-## LLM Judge Rules
+## Judge Rules
 
-The judge must be constrained and deterministic:
+The judging model is the host agent's own model, so it cannot be pinned the way an endpoint can. The constraint is applied through the contract instead:
 
-- fixed model and version for the whole run
-- temperature at or near zero
-- strict JSON schema output only
+- the prompt fixes the rubric, the bands, and the output shape
+- strict JSON only — no prose, no markdown fences
 - evidence required for any positive score
 - no tools, no file writes, no ranking logic
-- one result per submission and per rubric dimension, with confidence attributes
+- one result per submission, covering only the dimensions the request lists
+- the program owns all arithmetic, ranking, and confidence — never the model
+
+The model is asked not to decide rankings or compute totals. Even if it tries, `merge` recomputes every total from the bands, so a self-assigned score has no effect.
 
 ### Evidence rule
 
-For any score greater than zero in a dimension, the model must cite at least one evidence item:
+For any score greater than zero in a dimension, cite at least one evidence item:
 
 - `file_path`
 - `line_or_range`
 - `note`
 
-If no evidence is provided, cap the score at the lowest valid band.
+`merge` rejects any entry where a positive score carries no evidence, so an unevidenced submission fails loudly rather than being scored. Where evidence is genuinely absent, the band must be the lowest valid one.
 
-### Ensembling and confidence
+### Confidence
 
-Run two judge calls per dimension and take the per-dimension median. Confidence is derived from the widest disagreement across dimensions, not from the model's self-report:
+Confidence reflects how much of the result is model-derived versus fact-derived:
 
-- `high`: no disagreement, and at least two passes
-- `medium`: disagreement of one band, or only a single pass
-- `low`: disagreement exceeds one band
+- `high`: all dimensions evidenced, no review-severity findings
+- `medium`: pre-judge state, or judge confidence reported as `medium`
+- `low`: judge reported `low`, or more than two review-severity findings
 
 Entities with low confidence and a high rank must be routed to a human review queue.
 
 ## Concurrency and Throughput Design
 
-### Concurrency limit should be endpoint-driven, not CPU-driven
+### Concurrency limit should be driven by the host, not by raw CPU
 
-The LLM judge is not meant to scale by launching 150 independent agent processes. Instead:
+Do not scale by launching 150 independent agent processes. Instead:
 
 - static scan and ingestion can use a bounded worker pool
 - LLM evaluation uses a rate-limited queue
@@ -321,94 +323,98 @@ Only submissions that clear the static gate and complete a judge pass are ranked
 
 ## Runtime Scaffold (`code/`)
 
-A dependency-free reference implementation of the L0/L1 layer ships with this skill. It enforces the allowlist, classifies artifacts, runs the static gate, and validates judge output. It performs no network calls and never executes submitted code.
+A dependency-free Python implementation ships with this skill. It performs no network calls and never executes submitted code.
 
 | File | Purpose |
 |---|---|
+| `code/orchestrator.py` | CLI entry point: `prepare`, `merge`, `scan-only` |
+| `code/judge_io.py` | The two-phase workflow: emit judge requests, merge agent scores |
+| `code/judge_adapter.py` | Prompt assembly, evidence bundling, JSON contract validation |
 | `code/manifest_loader.py` | Load and validate the frozen submission manifest |
 | `code/artifact_classifier.py` | Deterministic artifact-type classification |
 | `code/allowlist.py` | Default-deny network allowlist decisions |
-| `code/static_scanner.py` | Secret, injection, dangerous-script, and external-host scanning |
-| `code/deterministic_scorer.py` | Scores D1/D2/D4/D5 from repository facts with no LLM |
-| `code/metrics.py` | Per-stage timing and token accounting, with measured vs estimated clearly separated |
-| `code/judge_adapter.py` | Judge prompt assembly and strict JSON contract validation |
-| `code/judge_transport.py` | The only module allowed to open a connection; refuses non-allowlisted hosts |
-| `code/aggregator.py` | Weighted scoring, median reconciliation, confidence, ranking |
+| `code/static_scanner.py` | Secret, injection, dangerous-script, external-host scanning |
+| `code/deterministic_scorer.py` | Scores D1/D2/D4/D5 from repository facts, no LLM |
+| `code/aggregator.py` | Weighted scoring, partial totals, confidence, ranking |
+| `code/metrics.py` | Per-stage timing and token accounting |
 | `code/report_generator.py` | Deterministic, escaped, CDN-free HTML reports |
-| `code/orchestrator.py` | Pipeline entry point and aggregate state output |
-| `code/tests/test_gates.py` | Standard-library tests for the gates |
-| `code/tests/test_pipeline.py` | Standard-library tests for aggregation, egress, and reports |
-| `code/tests/test_deterministic_scorer.py` | Standard-library tests for the deterministic dimensions |
-| `code/tests/test_metrics.py` | Standard-library tests for timing and token accounting |
+| `code/judge_transport.py` | Optional headless transport (not the primary path) |
+| `code/tests/` | Five standard-library test suites |
 
-### Running it
+Run the suites with:
 
 ```bash
 cd code
-for t in test_gates test_pipeline test_deterministic_scorer test_metrics; do
+for t in test_gates test_pipeline test_deterministic_scorer test_metrics test_judge_io; do
   PYTHONPATH=. python3 tests/$t.py
 done
-PYTHONPATH=. python3 orchestrator.py \
-  --manifest ../templates/submission-manifest-template.yaml \
-  --allowlist ../templates/allowlist.json \
-  --repo-root /path/to/repo-snapshots \
-  --out ./out \
-  --rubric ../templates/score-rubric.yaml
 ```
 
-Output is written to `out/execution-state.json`, with HTML in `out/reports/` (`index.html` plus one page per submission, linked from the dashboard). Pass `--no-report` to skip rendering.
+## How It Runs (Two-Phase, Host-Agent Native)
+
+This skill runs **inside** a host agent — GitHub Copilot, OpenCode, or similar. The model that judges a submission is the host agent's own model. **There is no separate LLM API to configure, and the pipeline never calls an endpoint on the primary path.**
+
+```text
+Phase 1  prepare   program scans repos, writes judge-requests/<id>.md
+   ↓
+         host agent reads each request and produces scores as JSON
+   ↓
+Phase 2  merge     program validates, combines, totals, ranks, renders HTML
+```
+
+```bash
+# Phase 1 — program
+PYTHONPATH=. python3 orchestrator.py prepare \
+  --manifest ../templates/submission-manifest-template.yaml \
+  --allowlist ../templates/allowlist.json \
+  --repo-root /path/to/repo-snapshots --out ./out \
+  --rubric ../templates/score-rubric.yaml
+
+# Phase 2 — after the host agent writes out/judge-scores.json
+PYTHONPATH=. python3 orchestrator.py merge --out ./out --rubric ../templates/score-rubric.yaml
+```
+
+`prepare` writes one request file per submission that cleared the static gate, containing the prompt, a bounded evidence bundle, and the deterministic scores already computed. `merge` validates the agent's scores against the contract, combines them with the deterministic dimensions, recomputes every total from the bands, re-ranks, and renders the reports. **Merge is idempotent** — re-running replaces the judge contribution rather than appending it.
+
+Use `scan-only` to exercise the deterministic layer with no judge pass; records then stay `awaiting-judge` and totals render as pending.
+
+Full command reference, the `judge-scores.json` shape, and failure behaviour are in `references/two-phase-workflow.md`.
+
+### Evidence bundle
+
+`judge_adapter.build_evidence_bundle` selects only what a judge needs: entry files first (`SKILL.md`, `README`, `AGENTS.md`, `opencode.json`, manifests), then agent definitions, then remaining source. Vendored directories (`.git`, `node_modules`, `dist`, …) are skipped, and the bundle is capped at 40 files / 120 KB total / 20 KB per file. Content is wrapped in explicit untrusted markers declaring it data, not instructions.
+
+### Optional headless transport
+
+`code/judge_transport.py` and `judge_adapter.run_judge` exist **only** for an optional headless/batch deployment where an endpoint is configured. They are not the primary path and are unnecessary when the skill runs inside a host agent.
 
 ### Where results are written
 
-Everything lands under `--out` (default `./out`): `execution-state.json` is the machine-readable source of truth, and `reports/` holds `index.html` (dashboard) plus one `<submission_id>.html` per submission, linked from the dashboard. The HTML is rendered deterministically from the JSON, so the two cannot disagree.
-
-To keep a run in the repository, point `--out` at a folder under `artifacts/`:
-
-```bash
---out ../../../artifacts/codecup-eval-<run-name>
-```
+Everything lands under `--out` (default `./out`): `execution-state.json` is the machine-readable source of truth, and `reports/` holds `index.html` (dashboard) plus one `<submission_id>.html` per submission, linked from the dashboard. The HTML is rendered deterministically from the JSON, so the two cannot disagree. Point `--out` at a folder under `artifacts/` to keep a run in the repository.
 
 Reports are self-contained — no CDN, no external fonts, no network needed to view them — and every interpolated value is HTML-escaped, so a hostile repository or team name cannot inject markup.
 
 ### Cost and timing metrics
 
-Every run records what each stage cost, so two scoring configurations can be compared directly. `out/execution-state.json` carries a batch `cost` block plus a `metrics` block per submission, and each report page renders a "Cost and timing" table.
+Every run records what each stage cost. `execution-state.json` carries a batch `cost` block plus a `metrics` block per submission, and each report page renders a "Cost and timing" table.
 
-Token figures are never conflated: `measured` means the endpoint's `usage` field reported it, `estimated` is a character heuristic for stages that call no model, and `none` means the stage ran without producing a figure. A run with `measured_tokens: 0` and `total_tokens > 0` means no model was called at all — the repository was processed entirely by the static and deterministic layers. The `judge` stage is absent from the metrics rather than recorded as zero when it does not run. See `references/cost-and-timing.md`.
+Token figures are never conflated: `measured` was reported by the model, `estimated` is a character heuristic for stages that call no model, and `none` means no figure was produced. Batch totals are summed **per stage**, so genuinely measured tokens are never hidden behind a submission's weakest label.
 
-Token counts and durations are formatted for reading in the reports: thousands are grouped (`36,866`), sub-second durations render in milliseconds (`31.0ms`), and longer ones in seconds or minutes.
+The host-agent judging phase is timed by deriving it from the `prepare` and `merge` timestamps and is labelled as derived. Its token usage is recorded only if the agent reported it.
+
+Counts and durations are formatted for reading: thousands grouped (`36,866`), sub-second durations in milliseconds (`31.0ms`), longer ones in seconds or minutes.
 
 ### What the orchestrator computes without an LLM
 
-Four of the seven dimensions are scored from repository facts before the judge is ever called: D1 security (from gate findings), D2 structure (from artifact markers), D4 documentation, and D5 testing. Only D3, D6, and D7 — the genuine judgement calls — go to the judge, and they stay at `0` with the record in `awaiting-judge` until a judge pass runs.
+Four of the seven dimensions are scored from repository facts before the judge is ever asked: D1 security (from gate findings), D2 structure (from artifact markers), D4 documentation, and D5 testing. Only D3, D6, and D7 — the genuine judgement calls — go to the host agent.
 
-Deterministic scores carry evidence and a rationale, so the merged result satisfies the same evidence contract the judge must meet. Pre-judge confidence is capped at `medium` because judge agreement has not been demonstrated yet; any review-severity finding (prompt injection, PII) forces `human_review_required` regardless of the confidence label.
+Deterministic scores carry evidence and a rationale, so the merged result satisfies the same evidence contract the judge must meet. Pre-judge confidence is capped at `medium`; any review-severity finding (prompt injection, PII) forces `human_review_required` regardless of the label.
 
-Per-dimension thresholds and the known weaknesses of these heuristics are documented in `references/deterministic-scoring.md`.
-
-### Wiring in the judge stage
-
-`orchestrator.py` deliberately stops at the static gate and leaves passing records in `awaiting-judge`. Supplying a score without a real judge call would fabricate results, so the judge stage is wired in explicitly by the caller:
-
-```python
-from allowlist import NetworkAllowlist
-from judge_transport import JudgeTransport, TransportConfig
-
-transport = JudgeTransport(
-    TransportConfig(endpoint_url="https://llm.internal.example/v1/chat/completions",
-                    model="<internal-model-id>"),
-    allowlist=NetworkAllowlist.from_file("../templates/allowlist.json"),
-    api_key=None,  # supply from the platform's secret store, never hardcode
-)
-```
-
-`JudgeTransport` checks the allowlist before every request and raises `EgressBlockedError` if the endpoint is outside the approved boundary. For prompt assembly, evidence-bundle selection, and untrusted-content wrapping, see `references/judge-prompt-assembly.md`.
+Per-dimension thresholds and the known weaknesses of these heuristics are in `references/deterministic-scoring.md`.
 
 ### Dependency note
 
-YAML manifests require `PyYAML`. In a locked-down environment where `PyYAML` is unavailable, convert the manifest to JSON — the loader falls back to `json` with no third-party dependency. Python 3.9+ is sufficient.
-
-`judge_adapter.run_judge` takes a caller-supplied `transport` callable rather than opening a connection itself, so the adapter cannot bypass the network policy.
+YAML manifests require `PyYAML`. Where `PyYAML` is unavailable, convert the manifest to JSON — the loader falls back to `json` with no third-party dependency. Python 3.9+ is sufficient.
 
 ## Recommended Workflow for Implementation
 

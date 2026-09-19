@@ -1,26 +1,30 @@
 {
   "state": {
-    "generated_at": "2026-09-19T02:24:49.458082+00:00",
+    "generated_at": "2026-09-19T03:33:38.092766+00:00",
     "total": 3,
     "hard_failed": 0,
-    "awaiting_judge": 3,
+    "awaiting_judge": 0,
     "failed": 0,
     "deterministic_dimensions": [
       "d1_security_and_compliance",
       "d2_structure_and_conformance",
       "d4_documentation",
       "d5_testing_and_reliability"
-    ]
+    ],
+    "judge_requests_prepared": 3,
+    "next_step": "Have the host agent score each file in judge-requests/ and write the results to judge-scores.json, then run: orchestrator.py merge",
+    "judge_merged": 3,
+    "done": 3
   },
   "cost": {
     "submissions": 3,
-    "total_elapsed_ms": 85.5,
+    "total_elapsed_ms": 86.0,
     "total_elapsed_s": 0.086,
-    "mean_elapsed_ms": 28.5,
+    "mean_elapsed_ms": 28.67,
     "total_tokens": 82903,
     "measured_tokens": 0,
     "estimated_tokens": 82903,
-    "note": "measured_tokens come from the endpoint's usage field; estimated_tokens come from a character heuristic for stages that make no model call"
+    "note": "measured_tokens were reported by the model/endpoint; estimated_tokens are a character heuristic for stages that call no model"
   },
   "results": [
     {
@@ -28,7 +32,7 @@
       "team_name": "Code Cup Evaluation Skill",
       "artifact_type": "skill",
       "commit_sha": "71b4623",
-      "state": "awaiting-judge",
+      "state": "done",
       "classification": {
         "detected": "skill",
         "declared": "skill",
@@ -135,10 +139,10 @@
         "d2_structure_and_conformance": 5,
         "d4_documentation": 5,
         "d5_testing_and_reliability": 3,
-        "d3_code_quality": 0,
-        "d6_business_value": 0,
-        "d7_innovation": 0,
-        "total": 0
+        "d3_code_quality": 5,
+        "d6_business_value": 5,
+        "d7_innovation": 5,
+        "total": 88.57
       },
       "deterministic_rationales": {
         "d1_security_and_compliance": "12 review-level finding(s) present",
@@ -206,29 +210,50 @@
           "file_path": "code/tests/test_pipeline.py",
           "line_or_range": "-",
           "note": "test file"
+        },
+        {
+          "file_path": "code/static_scanner.py",
+          "line_or_range": "1-60",
+          "note": "context-aware severity resolution: the same string is judged by file context, so documentation and test fixtures are not hard-failed as live risks"
+        },
+        {
+          "file_path": "code/judge_io.py",
+          "line_or_range": "1-50",
+          "note": "two-phase prepare/merge split that lets the host agent judge without any endpoint; merge is idempotent"
+        },
+        {
+          "file_path": "code/tests/test_judge_io.py",
+          "line_or_range": "1-40",
+          "note": "five stdlib test suites total; this one covers bundle capping, entry-file truncation, and merge idempotency"
+        },
+        {
+          "file_path": "code/deterministic_scorer.py",
+          "line_or_range": "1-40",
+          "note": "scores four of seven dimensions from repository facts with no model call, attaching evidence and a rationale to every band"
+        },
+        {
+          "file_path": "code/report_generator.py",
+          "line_or_range": "100-200",
+          "note": "deterministic HTML rendering with full escaping and no CDN dependency"
         }
       ],
       "scoring_status": {
-        "partial_total": 80.0,
-        "final": false,
-        "pending_dimensions": [
-          "d3_code_quality",
-          "d6_business_value",
-          "d7_innovation"
-        ],
-        "scored_weight_fraction": 0.5714
+        "partial_total": 88.57,
+        "final": true,
+        "pending_dimensions": [],
+        "scored_weight_fraction": 1.0
       },
-      "confidence": "low",
+      "confidence": "high",
       "human_review_required": true,
       "provenance": {
         "rubric_version": "unversioned",
         "prompt_version": "unversioned",
         "model_version": "not-run",
-        "scanned_at": "2026-09-19T02:24:49.408196+00:00"
+        "scanned_at": "2026-09-19T03:33:38.043466+00:00"
       },
       "metrics": {
-        "total_elapsed_ms": 36.37,
-        "total_elapsed_s": 0.036,
+        "total_elapsed_ms": 38.0,
+        "total_elapsed_s": 0.038,
         "total_tokens": {
           "prompt_tokens": 36866,
           "completion_tokens": 0,
@@ -253,8 +278,8 @@
           },
           {
             "name": "static_scan",
-            "elapsed_ms": 35.32,
-            "elapsed_s": 0.035,
+            "elapsed_ms": 36.62,
+            "elapsed_s": 0.037,
             "tokens": {
               "prompt_tokens": 36866,
               "completion_tokens": 0,
@@ -266,7 +291,7 @@
           },
           {
             "name": "deterministic_scoring",
-            "elapsed_ms": 1.03,
+            "elapsed_ms": 1.2,
             "elapsed_s": 0.001,
             "tokens": {
               "prompt_tokens": 0,
@@ -276,16 +301,141 @@
               "model": "",
               "calls": 0
             }
+          },
+          {
+            "name": "judge_wall_clock",
+            "elapsed_ms": 88218.0,
+            "elapsed_s": 88.218,
+            "tokens": {
+              "prompt_tokens": 0,
+              "completion_tokens": 0,
+              "total_tokens": 0,
+              "source": "none",
+              "model": "",
+              "calls": 0
+            },
+            "timing_source": "wall-clock from prepare to merge, including idle time; an upper bound, not model compute time",
+            "token_source_note": "host agent did not report token usage"
           }
-        ]
-      }
+        ],
+        "agent_wall_clock_s": 88.218
+      },
+      "judge_request": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/judge-requests/TEAM_001.md",
+      "evidence_files_included": [
+        "SKILL.md",
+        "code/README.md",
+        "IMPLEMENTATION-PLAN.md",
+        "code/aggregator.py",
+        "code/allowlist.py",
+        "code/artifact_classifier.py",
+        "code/deterministic_scorer.py",
+        "code/judge_adapter.py",
+        "code/judge_transport.py",
+        "code/manifest_loader.py",
+        "code/orchestrator.py",
+        "code/report_generator.py",
+        "code/static_scanner.py",
+        "references/deterministic-scoring.md",
+        "references/judge-prompt-assembly.md",
+        "templates/allowlist.json",
+        "templates/judge-prompt-template.md",
+        "templates/result.schema.json",
+        "templates/score-rubric.yaml",
+        "templates/static-scan-checklist.md",
+        "templates/submission-manifest-template.yaml"
+      ],
+      "deterministic_evidence": [
+        {
+          "file_path": "templates/static-scan-checklist.md",
+          "line_or_range": "24",
+          "note": "flagged for review: injection:ignore_instructions"
+        },
+        {
+          "file_path": "templates/static-scan-checklist.md",
+          "line_or_range": "24",
+          "note": "flagged for review: injection:force_full_score"
+        },
+        {
+          "file_path": "templates/result.schema.json",
+          "line_or_range": "2",
+          "note": "flagged for review: network:external_host:json-schema.org"
+        },
+        {
+          "file_path": "code/tests/test_gates.py",
+          "line_or_range": "97",
+          "note": "flagged for review: secret:aws_access_key"
+        },
+        {
+          "file_path": "code/tests/test_gates.py",
+          "line_or_range": "98",
+          "note": "flagged for review: secret:anthropic_key"
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "-",
+          "note": "required skill marker present"
+        },
+        {
+          "file_path": "skill.md",
+          "line_or_range": "-",
+          "note": "required skill marker present"
+        },
+        {
+          "file_path": "code/README.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "code/tests/test_deterministic_scorer.py",
+          "line_or_range": "-",
+          "note": "test file"
+        },
+        {
+          "file_path": "code/tests/test_gates.py",
+          "line_or_range": "-",
+          "note": "test file"
+        },
+        {
+          "file_path": "code/tests/test_pipeline.py",
+          "line_or_range": "-",
+          "note": "test file"
+        }
+      ],
+      "judge_evidence": [
+        {
+          "file_path": "code/static_scanner.py",
+          "line_or_range": "1-60",
+          "note": "context-aware severity resolution: the same string is judged by file context, so documentation and test fixtures are not hard-failed as live risks"
+        },
+        {
+          "file_path": "code/judge_io.py",
+          "line_or_range": "1-50",
+          "note": "two-phase prepare/merge split that lets the host agent judge without any endpoint; merge is idempotent"
+        },
+        {
+          "file_path": "code/tests/test_judge_io.py",
+          "line_or_range": "1-40",
+          "note": "five stdlib test suites total; this one covers bundle capping, entry-file truncation, and merge idempotency"
+        },
+        {
+          "file_path": "code/deterministic_scorer.py",
+          "line_or_range": "1-40",
+          "note": "scores four of seven dimensions from repository facts with no model call, attaching evidence and a rationale to every band"
+        },
+        {
+          "file_path": "code/report_generator.py",
+          "line_or_range": "100-200",
+          "note": "deterministic HTML rendering with full escaping and no CDN dependency"
+        }
+      ],
+      "rank": 1
     },
     {
       "submission_id": "TEAM_002",
       "team_name": "CodeCup Eval DeepSeek",
       "artifact_type": "skill",
       "commit_sha": "cc24d45",
-      "state": "awaiting-judge",
+      "state": "done",
       "classification": {
         "detected": "skill",
         "declared": "skill",
@@ -413,10 +563,10 @@
         "d2_structure_and_conformance": 5,
         "d4_documentation": 3,
         "d5_testing_and_reliability": 1,
-        "d3_code_quality": 0,
-        "d6_business_value": 0,
-        "d7_innovation": 0,
-        "total": 0
+        "d3_code_quality": 3,
+        "d6_business_value": 3,
+        "d7_innovation": 3,
+        "total": 60.0
       },
       "deterministic_rationales": {
         "d1_security_and_compliance": "15 review-level finding(s) present",
@@ -494,28 +644,44 @@
           "file_path": "(repository)",
           "line_or_range": "-",
           "note": "no test files detected"
+        },
+        {
+          "file_path": "references/03-scoring-rubric.md",
+          "line_or_range": "1-40",
+          "note": "detailed weighted rubric with anchored bands and per-artifact weight profiles"
+        },
+        {
+          "file_path": "references/04-security-design.md",
+          "line_or_range": "20-60",
+          "note": "threat model including an injection pre-screen and judge isolation controls"
+        },
+        {
+          "file_path": "schemas/project_result.schema.json",
+          "line_or_range": "1-30",
+          "note": "machine-readable result contract is specified"
+        },
+        {
+          "file_path": "references/08-pipeline-and-orchestration.md",
+          "line_or_range": "1-40",
+          "note": "pipeline and batching described as prose only; no runnable implementation ships"
         }
       ],
       "scoring_status": {
         "partial_total": 60.0,
-        "final": false,
-        "pending_dimensions": [
-          "d3_code_quality",
-          "d6_business_value",
-          "d7_innovation"
-        ],
-        "scored_weight_fraction": 0.5714
+        "final": true,
+        "pending_dimensions": [],
+        "scored_weight_fraction": 1.0
       },
-      "confidence": "low",
+      "confidence": "medium",
       "human_review_required": true,
       "provenance": {
         "rubric_version": "unversioned",
         "prompt_version": "unversioned",
         "model_version": "not-run",
-        "scanned_at": "2026-09-19T02:24:49.431979+00:00"
+        "scanned_at": "2026-09-19T03:33:38.067571+00:00"
       },
       "metrics": {
-        "total_elapsed_ms": 23.28,
+        "total_elapsed_ms": 23.0,
         "total_elapsed_s": 0.023,
         "total_tokens": {
           "prompt_tokens": 21147,
@@ -541,7 +707,7 @@
           },
           {
             "name": "static_scan",
-            "elapsed_ms": 22.24,
+            "elapsed_ms": 22.42,
             "elapsed_s": 0.022,
             "tokens": {
               "prompt_tokens": 21147,
@@ -554,7 +720,7 @@
           },
           {
             "name": "deterministic_scoring",
-            "elapsed_ms": 1.02,
+            "elapsed_ms": 1.1,
             "elapsed_s": 0.001,
             "tokens": {
               "prompt_tokens": 0,
@@ -564,16 +730,148 @@
               "model": "",
               "calls": 0
             }
+          },
+          {
+            "name": "judge_wall_clock",
+            "elapsed_ms": 88218.0,
+            "elapsed_s": 88.218,
+            "tokens": {
+              "prompt_tokens": 0,
+              "completion_tokens": 0,
+              "total_tokens": 0,
+              "source": "none",
+              "model": "",
+              "calls": 0
+            },
+            "timing_source": "wall-clock from prepare to merge, including idle time; an upper bound, not model compute time",
+            "token_source_note": "host agent did not report token usage"
           }
-        ]
-      }
+        ],
+        "agent_wall_clock_s": 88.218
+      },
+      "judge_request": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/judge-requests/TEAM_002.md",
+      "evidence_files_included": [
+        "SKILL.md",
+        "references/01-requirements.md",
+        "references/02-standards-and-formats.md",
+        "references/03-scoring-rubric.md",
+        "references/04-security-design.md",
+        "references/05-llm-judge-methodology.md",
+        "references/06-dynamic-eval-metrics.md",
+        "references/07-data-model-and-schemas.md",
+        "references/08-pipeline-and-orchestration.md",
+        "references/09-reporting-and-github-pages.md",
+        "references/10-industry-rubrics-and-sources.md",
+        "schemas/hackathon_questionnaire.schema.json",
+        "schemas/leaderboard.schema.json",
+        "schemas/project_result.schema.json",
+        "schemas/submission_manifest.schema.json",
+        "templates/hackathon-questionnaire-template.yaml",
+        "templates/judge-prompt-copilot-agent.md",
+        "templates/judge-prompt-opencode-agent.md",
+        "templates/judge-prompt-skill.md",
+        "templates/judge-prompt-source-project.md",
+        "templates/leaderboard-data-template.json",
+        "templates/project-report-data-template.json",
+        "templates/submission-manifest-template.yaml"
+      ],
+      "deterministic_evidence": [
+        {
+          "file_path": "references/09-reporting-and-github-pages.md",
+          "line_or_range": "20",
+          "note": "flagged for review: network:external_host:..."
+        },
+        {
+          "file_path": "references/04-security-design.md",
+          "line_or_range": "26",
+          "note": "flagged for review: injection:ignore_instructions"
+        },
+        {
+          "file_path": "references/04-security-design.md",
+          "line_or_range": "57",
+          "note": "flagged for review: injection:rubric_override"
+        },
+        {
+          "file_path": "schemas/submission_manifest.schema.json",
+          "line_or_range": "2",
+          "note": "flagged for review: network:external_host:json-schema.org"
+        },
+        {
+          "file_path": "schemas/submission_manifest.schema.json",
+          "line_or_range": "3",
+          "note": "flagged for review: network:external_host:codecup.internal"
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "-",
+          "note": "required skill marker present"
+        },
+        {
+          "file_path": "skill.md",
+          "line_or_range": "-",
+          "note": "required skill marker present"
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "references/02-standards-and-formats.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "references/03-scoring-rubric.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "references/05-llm-judge-methodology.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "references/10-industry-rubrics-and-sources.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "(repository)",
+          "line_or_range": "-",
+          "note": "no test files detected"
+        }
+      ],
+      "judge_evidence": [
+        {
+          "file_path": "references/03-scoring-rubric.md",
+          "line_or_range": "1-40",
+          "note": "detailed weighted rubric with anchored bands and per-artifact weight profiles"
+        },
+        {
+          "file_path": "references/04-security-design.md",
+          "line_or_range": "20-60",
+          "note": "threat model including an injection pre-screen and judge isolation controls"
+        },
+        {
+          "file_path": "schemas/project_result.schema.json",
+          "line_or_range": "1-30",
+          "note": "machine-readable result contract is specified"
+        },
+        {
+          "file_path": "references/08-pipeline-and-orchestration.md",
+          "line_or_range": "1-40",
+          "note": "pipeline and batching described as prose only; no runnable implementation ships"
+        }
+      ],
+      "rank": 2
     },
     {
       "submission_id": "TEAM_003",
       "team_name": "CodeCup Eval Sonnet5",
       "artifact_type": "skill",
       "commit_sha": "86fa96d",
-      "state": "awaiting-judge",
+      "state": "done",
       "classification": {
         "detected": "skill",
         "declared": "skill",
@@ -834,10 +1132,10 @@
         "d2_structure_and_conformance": 5,
         "d4_documentation": 3,
         "d5_testing_and_reliability": 1,
-        "d3_code_quality": 0,
-        "d6_business_value": 0,
-        "d7_innovation": 0,
-        "total": 0
+        "d3_code_quality": 3,
+        "d6_business_value": 3,
+        "d7_innovation": 3,
+        "total": 60.0
       },
       "deterministic_rationales": {
         "d1_security_and_compliance": "34 review-level finding(s) present",
@@ -915,29 +1213,45 @@
           "file_path": "(repository)",
           "line_or_range": "-",
           "note": "no test files detected"
+        },
+        {
+          "file_path": "references/01-standard-claude-skill-spec.md",
+          "line_or_range": "1-30",
+          "note": "extracts the official Agent Skill spec inline so the pack works air-gapped"
+        },
+        {
+          "file_path": "references/04-scoring-rubric.md",
+          "line_or_range": "1-40",
+          "note": "rubric with 1/3/5 anchors across all four submission types"
+        },
+        {
+          "file_path": "references/11-product-requirements-and-open-questions.md",
+          "line_or_range": "1-40",
+          "note": "PRD-style summary with open decisions and acceptance criteria"
+        },
+        {
+          "file_path": "references/05-security-static-checklist.md",
+          "line_or_range": "30-40",
+          "note": "zero-execution security checklist expressed as pattern categories, not code"
         }
       ],
       "scoring_status": {
         "partial_total": 60.0,
-        "final": false,
-        "pending_dimensions": [
-          "d3_code_quality",
-          "d6_business_value",
-          "d7_innovation"
-        ],
-        "scored_weight_fraction": 0.5714
+        "final": true,
+        "pending_dimensions": [],
+        "scored_weight_fraction": 1.0
       },
-      "confidence": "low",
+      "confidence": "medium",
       "human_review_required": true,
       "provenance": {
         "rubric_version": "unversioned",
         "prompt_version": "unversioned",
         "model_version": "not-run",
-        "scanned_at": "2026-09-19T02:24:49.458052+00:00"
+        "scanned_at": "2026-09-19T03:33:38.092742+00:00"
       },
       "metrics": {
-        "total_elapsed_ms": 25.85,
-        "total_elapsed_s": 0.026,
+        "total_elapsed_ms": 25.0,
+        "total_elapsed_s": 0.025,
         "total_tokens": {
           "prompt_tokens": 24890,
           "completion_tokens": 0,
@@ -962,8 +1276,8 @@
           },
           {
             "name": "static_scan",
-            "elapsed_ms": 24.95,
-            "elapsed_s": 0.025,
+            "elapsed_ms": 24.07,
+            "elapsed_s": 0.024,
             "tokens": {
               "prompt_tokens": 24890,
               "completion_tokens": 0,
@@ -975,7 +1289,7 @@
           },
           {
             "name": "deterministic_scoring",
-            "elapsed_ms": 0.88,
+            "elapsed_ms": 0.83,
             "elapsed_s": 0.001,
             "tokens": {
               "prompt_tokens": 0,
@@ -985,9 +1299,137 @@
               "model": "",
               "calls": 0
             }
+          },
+          {
+            "name": "judge_wall_clock",
+            "elapsed_ms": 88218.0,
+            "elapsed_s": 88.218,
+            "tokens": {
+              "prompt_tokens": 0,
+              "completion_tokens": 0,
+              "total_tokens": 0,
+              "source": "none",
+              "model": "",
+              "calls": 0
+            },
+            "timing_source": "wall-clock from prepare to merge, including idle time; an upper bound, not model compute time",
+            "token_source_note": "host agent did not report token usage"
           }
-        ]
-      }
+        ],
+        "agent_wall_clock_s": 88.218
+      },
+      "judge_request": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/judge-requests/TEAM_003.md",
+      "evidence_files_included": [
+        "SKILL.md",
+        "references/01-standard-claude-skill-spec.md",
+        "references/02-standard-github-copilot-agent-spec.md",
+        "references/03-standard-opencode-agent-skill-spec.md",
+        "references/04-scoring-rubric.md",
+        "references/05-security-static-checklist.md",
+        "references/06-llm-judge-methodology.md",
+        "references/07-dynamic-eval-metrics.md",
+        "references/08-json-output-schema.md",
+        "references/09-pipeline-and-architecture.md",
+        "references/10-html-report-requirements.md",
+        "references/11-product-requirements-and-open-questions.md",
+        "templates/dashboard-aggregate-data-template.json",
+        "templates/judge-prompt-copilot-agent-submission.md",
+        "templates/judge-prompt-opencode-agent-submission.md",
+        "templates/judge-prompt-skill-submission.md",
+        "templates/judge-prompt-source-project-submission.md",
+        "templates/project-report-data-template.json",
+        "templates/submission-manifest-template.yaml"
+      ],
+      "deterministic_evidence": [
+        {
+          "file_path": "references/01-standard-claude-skill-spec.md",
+          "line_or_range": "3",
+          "note": "flagged for review: network:external_host:agentskills.io"
+        },
+        {
+          "file_path": "references/01-standard-claude-skill-spec.md",
+          "line_or_range": "3",
+          "note": "flagged for review: network:external_host:docs.anthropic.com"
+        },
+        {
+          "file_path": "references/03-standard-opencode-agent-skill-spec.md",
+          "line_or_range": "3",
+          "note": "flagged for review: network:external_host:opencode.ai"
+        },
+        {
+          "file_path": "references/03-standard-opencode-agent-skill-spec.md",
+          "line_or_range": "3",
+          "note": "flagged for review: network:external_host:dotagentsprotocol.com"
+        },
+        {
+          "file_path": "references/05-security-static-checklist.md",
+          "line_or_range": "36",
+          "note": "flagged for review: script:curl_pipe_shell"
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "-",
+          "note": "required skill marker present"
+        },
+        {
+          "file_path": "skill.md",
+          "line_or_range": "-",
+          "note": "required skill marker present"
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "references/04-scoring-rubric.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "references/01-standard-claude-skill-spec.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "references/03-standard-opencode-agent-skill-spec.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "references/07-dynamic-eval-metrics.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "(repository)",
+          "line_or_range": "-",
+          "note": "no test files detected"
+        }
+      ],
+      "judge_evidence": [
+        {
+          "file_path": "references/01-standard-claude-skill-spec.md",
+          "line_or_range": "1-30",
+          "note": "extracts the official Agent Skill spec inline so the pack works air-gapped"
+        },
+        {
+          "file_path": "references/04-scoring-rubric.md",
+          "line_or_range": "1-40",
+          "note": "rubric with 1/3/5 anchors across all four submission types"
+        },
+        {
+          "file_path": "references/11-product-requirements-and-open-questions.md",
+          "line_or_range": "1-40",
+          "note": "PRD-style summary with open decisions and acceptance criteria"
+        },
+        {
+          "file_path": "references/05-security-static-checklist.md",
+          "line_or_range": "30-40",
+          "note": "zero-execution security checklist expressed as pattern categories, not code"
+        }
+      ],
+      "rank": 3
     }
   ],
   "reports": {

@@ -514,6 +514,38 @@ def test_dashboard_marks_pending_scores() -> None:
     )
 
 
+def test_ranking_reads_total_from_scores_block() -> None:
+    """The pipeline stores the total in scores['total']; ranking must find it."""
+    records = [
+        {"submission_id": "T1", "state": "done", "confidence": "high", "scores": {"total": 88.57}},
+        {"submission_id": "T2", "state": "done", "confidence": "high", "scores": {"total": 60.0}},
+        {"submission_id": "T3", "state": "awaiting-judge", "confidence": "medium", "scores": {"total": 0}},
+    ]
+    ranked = rank_results(records)
+
+    check(
+        "scored records from scores['total'] are ranked",
+        ranked[0]["submission_id"] == "T1",
+        str([r.get("submission_id") for r in ranked]),
+    )
+    check("ranks are assigned", ranked[0].get("rank") == 1, str(ranked[0].get("rank")))
+    check("second rank assigned", ranked[1].get("rank") == 2)
+    check(
+        "awaiting-judge record is not ranked",
+        "rank" not in ranked[2],
+        str(ranked[2]),
+    )
+
+    # Top-level totals are still honoured for older/synthetic records.
+    legacy = [
+        {"submission_id": "L1", "state": "done", "confidence": "high", "total": 70.0},
+        {"submission_id": "L2", "state": "done", "confidence": "high", "total": 40.0},
+    ]
+    legacy_ranked = rank_results(legacy)
+    check("top-level totals still rank", legacy_ranked[0]["submission_id"] == "L1")
+    check("legacy rank assigned", legacy_ranked[0].get("rank") == 1)
+
+
 def main() -> int:
     test_aggregation_median()
     test_aggregation_agreement()
@@ -533,6 +565,7 @@ def main() -> int:
     test_partial_total_excludes_pending_dimensions()
     test_pending_report_does_not_show_zero_total()
     test_dashboard_marks_pending_scores()
+    test_ranking_reads_total_from_scores_block()
 
     print()
     if FAILURES:

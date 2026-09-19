@@ -229,6 +229,25 @@ def compute_partial_total(
     }
 
 
+def _total_of(record: dict[str, object]) -> float:
+    """Read a submission's total, tolerating both shapes it is stored in.
+
+    The pipeline keeps the total inside `scores["total"]`. Older and synthetic
+    records place it at the top level. Both are accepted so ranking never
+    silently drops a scored submission because of a field-path mismatch.
+    """
+    scores = record.get("scores")
+    if isinstance(scores, dict):
+        try:
+            return float(scores.get("total", 0) or 0)
+        except (TypeError, ValueError):
+            pass
+    try:
+        return float(record.get("total", 0) or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def _is_scored(record: dict[str, object]) -> bool:
     """A record only counts as scored once the judge has produced a total.
 
@@ -238,7 +257,7 @@ def _is_scored(record: dict[str, object]) -> bool:
     """
     if str(record.get("state", "")) in NON_SCORED_STATES:
         return False
-    return float(record.get("total", 0) or 0) > 0
+    return _total_of(record) > 0
 
 
 def rank_results(results: list[dict[str, object]]) -> list[dict[str, object]]:
@@ -252,7 +271,7 @@ def rank_results(results: list[dict[str, object]]) -> list[dict[str, object]]:
     scored = [r for r in results if _is_scored(r)]
     unscored = [r for r in results if not _is_scored(r)]
 
-    scored.sort(key=lambda r: (-float(r.get("total", 0) or 0), str(r.get("submission_id", ""))))
+    scored.sort(key=lambda r: (-_total_of(r), str(r.get("submission_id", ""))))
     unscored.sort(key=lambda r: str(r.get("submission_id", "")))
 
     ranked = scored + unscored

@@ -54,8 +54,8 @@ ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
 
 <h1>CodeCup Eval Sonnet5</h1>
 <div class="sub">
-  <span class="state">awaiting-judge</span>
-  &nbsp; <span class="badge conf-low">low confidence</span>
+  <span class="state">done</span>
+  &nbsp; <span class="badge conf-medium">medium confidence</span>
   &nbsp; submission TEAM_003
 </div>
 <div class="card review"><strong>Human review required</strong><br>low confidence</div>
@@ -64,31 +64,32 @@ ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
     <dt>Artifact type</dt><dd>skill</dd>
     <dt>Commit SHA</dt><dd><code>86fa96d</code></dd>
     <dt>Static gate</dt><dd class="gate-pass">passed</dd>
-    <dt>Total score</dt><dd><strong>Pending judge</strong></dd>
-    <dt>Deterministic subtotal</dt><dd>60.0 / 100 from 3 of 7 dimensions not yet judged</dd><dt>Awaiting</dt><dd>d3_code_quality, d6_business_value, d7_innovation</dd>
-    <dt>Rank</dt><dd>—</dd>
+    <dt>Total score</dt><dd><strong>60.0 / 100</strong></dd>
+    
+    <dt>Rank</dt><dd>3</dd>
   </dl>
 </div>
 <h2>Dimension scores</h2>
 <div class="scroll">
 <table>
   <thead><tr><th>Dimension</th><th class="num">Band</th><th>Scale</th></tr></thead>
-  <tbody><tr><td>Security and compliance</td><td class="num">3.0</td><td><div class="bar"><span style="width:60%"></span></div></td></tr><tr><td>Structure and conformance</td><td class="num">5.0</td><td><div class="bar"><span style="width:100%"></span></div></td></tr><tr><td>Code and content quality</td><td class="num">0.0</td><td><div class="bar"><span style="width:0%"></span></div></td></tr><tr><td>Documentation</td><td class="num">3.0</td><td><div class="bar"><span style="width:60%"></span></div></td></tr><tr><td>Testing and reliability</td><td class="num">1.0</td><td><div class="bar"><span style="width:20%"></span></div></td></tr><tr><td>Business value</td><td class="num">0.0</td><td><div class="bar"><span style="width:0%"></span></div></td></tr><tr><td>Innovation</td><td class="num">0.0</td><td><div class="bar"><span style="width:0%"></span></div></td></tr></tbody>
+  <tbody><tr><td>Security and compliance</td><td class="num">3.0</td><td><div class="bar"><span style="width:60%"></span></div></td></tr><tr><td>Structure and conformance</td><td class="num">5.0</td><td><div class="bar"><span style="width:100%"></span></div></td></tr><tr><td>Code and content quality</td><td class="num">3.0</td><td><div class="bar"><span style="width:60%"></span></div></td></tr><tr><td>Documentation</td><td class="num">3.0</td><td><div class="bar"><span style="width:60%"></span></div></td></tr><tr><td>Testing and reliability</td><td class="num">1.0</td><td><div class="bar"><span style="width:20%"></span></div></td></tr><tr><td>Business value</td><td class="num">3.0</td><td><div class="bar"><span style="width:60%"></span></div></td></tr><tr><td>Innovation</td><td class="num">3.0</td><td><div class="bar"><span style="width:60%"></span></div></td></tr></tbody>
 </table>
 </div>
 <h2>Cost and timing</h2>
 <div class="scroll">
 <table>
   <thead><tr><th>Stage</th><th class="num">Elapsed</th><th class="num">Tokens</th><th>Source</th></tr></thead>
-  <tbody><tr><td>classify</td><td class="num">0.00ms</td><td class="num">0</td><td>none</td></tr><tr><td>static_scan</td><td class="num">25.0ms</td><td class="num">24,890</td><td>estimated</td></tr><tr><td>deterministic_scoring</td><td class="num">1.0ms</td><td class="num">0</td><td>none</td></tr></tbody>
+  <tbody><tr><td>classify</td><td class="num">0.00ms</td><td class="num">0</td><td>none</td></tr><tr><td>static_scan</td><td class="num">24.0ms</td><td class="num">24,890</td><td>estimated</td></tr><tr><td>deterministic_scoring</td><td class="num">1.0ms</td><td class="num">0</td><td>none</td></tr><tr><td>judge_wall_clock</td><td class="num">1m 28.2s</td><td class="num">0</td><td>none</td></tr></tbody>
 </table>
 </div>
 <p class="sub">
-  Total 26.0ms &nbsp;·&nbsp;
+  Total 25.0ms &nbsp;·&nbsp;
   24,890 tokens (<code>estimated</code>) &nbsp;·&nbsp;
-  <code>measured</code> means the endpoint reported it;
+  <code>measured</code> means the model reported it;
   <code>estimated</code> is a character heuristic for stages that call no model.
 </p>
+<p class="sub">Judging ran inside the host agent and is <strong>not</strong> included in the total above. Wall-clock from prepare to merge: 1m 28.2s (includes idle time, so it is an upper bound rather than compute time) — the host agent did not report token usage.</p>
 <h2>Static gate findings</h2>
 <div class="scroll">
 <table>
@@ -97,14 +98,14 @@ ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
 </table>
 </div>
 <h2>Cited evidence</h2>
-<ul class="evidence"><li><code>references/01-standard-claude-skill-spec.md</code> 3 — flagged for review: network:external_host:agentskills.io</li><li><code>references/01-standard-claude-skill-spec.md</code> 3 — flagged for review: network:external_host:docs.anthropic.com</li><li><code>references/03-standard-opencode-agent-skill-spec.md</code> 3 — flagged for review: network:external_host:opencode.ai</li><li><code>references/03-standard-opencode-agent-skill-spec.md</code> 3 — flagged for review: network:external_host:dotagentsprotocol.com</li><li><code>references/05-security-static-checklist.md</code> 36 — flagged for review: script:curl_pipe_shell</li><li><code>SKILL.md</code> - — required skill marker present</li><li><code>skill.md</code> - — required skill marker present</li><li><code>SKILL.md</code> - — documentation file</li><li><code>references/04-scoring-rubric.md</code> - — documentation file</li><li><code>references/01-standard-claude-skill-spec.md</code> - — documentation file</li><li><code>references/03-standard-opencode-agent-skill-spec.md</code> - — documentation file</li><li><code>references/07-dynamic-eval-metrics.md</code> - — documentation file</li><li><code>(repository)</code> - — no test files detected</li></ul>
+<ul class="evidence"><li><code>references/01-standard-claude-skill-spec.md</code> 3 — flagged for review: network:external_host:agentskills.io</li><li><code>references/01-standard-claude-skill-spec.md</code> 3 — flagged for review: network:external_host:docs.anthropic.com</li><li><code>references/03-standard-opencode-agent-skill-spec.md</code> 3 — flagged for review: network:external_host:opencode.ai</li><li><code>references/03-standard-opencode-agent-skill-spec.md</code> 3 — flagged for review: network:external_host:dotagentsprotocol.com</li><li><code>references/05-security-static-checklist.md</code> 36 — flagged for review: script:curl_pipe_shell</li><li><code>SKILL.md</code> - — required skill marker present</li><li><code>skill.md</code> - — required skill marker present</li><li><code>SKILL.md</code> - — documentation file</li><li><code>references/04-scoring-rubric.md</code> - — documentation file</li><li><code>references/01-standard-claude-skill-spec.md</code> - — documentation file</li><li><code>references/03-standard-opencode-agent-skill-spec.md</code> - — documentation file</li><li><code>references/07-dynamic-eval-metrics.md</code> - — documentation file</li><li><code>(repository)</code> - — no test files detected</li><li><code>references/01-standard-claude-skill-spec.md</code> 1-30 — extracts the official Agent Skill spec inline so the pack works air-gapped</li><li><code>references/04-scoring-rubric.md</code> 1-40 — rubric with 1/3/5 anchors across all four submission types</li><li><code>references/11-product-requirements-and-open-questions.md</code> 1-40 — PRD-style summary with open decisions and acceptance criteria</li><li><code>references/05-security-static-checklist.md</code> 30-40 — zero-execution security checklist expressed as pattern categories, not code</li></ul>
 <h2>Provenance</h2>
 <div class="card">
   <dl class="kv">
     <dt>Rubric version</dt><dd>unversioned</dd>
     <dt>Prompt version</dt><dd>unversioned</dd>
     <dt>Model version</dt><dd>not-run</dd>
-    <dt>Scanned at</dt><dd>2026-09-19T02:24:49.458052+00:00</dd>
+    <dt>Scanned at</dt><dd>2026-09-19T03:33:38.092742+00:00</dd>
   </dl>
 </div>
 
