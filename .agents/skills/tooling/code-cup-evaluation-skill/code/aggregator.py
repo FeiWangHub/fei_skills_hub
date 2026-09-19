@@ -165,6 +165,9 @@ def aggregate(
 
     Judge bands are 1/3/5. The weighted mean is projected onto a 0-100 scale
     so the leaderboard stays readable while the underlying scale stays anchored.
+
+    Requires at least one judge pass: a total cannot be final while any
+    dimension is unscored. For a pre-judge figure use `compute_partial_total`.
     """
     reconciled, spread, evidence = reconcile_passes(passes)
     confidence = derive_confidence(spread, len(passes), review_findings)
@@ -183,6 +186,47 @@ def aggregate(
 
 
 NON_SCORED_STATES = {"hard-failed", "failed"}
+
+
+def compute_partial_total(
+    scores: dict[str, object],
+    weights: dict[str, float],
+    pending_dimensions: list[str] | None = None,
+) -> dict[str, object]:
+    """Compute the score contribution from dimensions already scored.
+
+    Before the judge runs, only the deterministic dimensions carry a band. A
+    plain `total` of 0 in that situation is misleading: it reads as "scored
+    zero" when it actually means "not scored yet". This returns an explicit
+    breakdown so a report can say so plainly.
+
+    `final` is False while any dimension is still pending, and `total` is then
+    a partial figure that will change once the judge runs.
+    """
+    pending = list(pending_dimensions or [])
+    scored_weight = sum(
+        weights.get(key, 0.0)
+        for key in SCORE_KEYS
+        if key not in pending
+    )
+
+    weighted = sum(
+        float(scores.get(key, 0) or 0) * weights.get(key, 0.0)
+        for key in SCORE_KEYS
+        if key not in pending
+    )
+
+    # Project onto 0-100 using only the weight that has actually been scored,
+    # so the partial figure is comparable to the final one rather than being
+    # diluted by dimensions that have not run.
+    partial = round((weighted / (scored_weight * 5.0)) * 100, 2) if scored_weight > 0 else 0.0
+
+    return {
+        "partial_total": partial,
+        "final": not pending,
+        "pending_dimensions": pending,
+        "scored_weight_fraction": round(scored_weight, 4),
+    }
 
 
 def _is_scored(record: dict[str, object]) -> bool:

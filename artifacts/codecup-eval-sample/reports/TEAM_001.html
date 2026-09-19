@@ -34,6 +34,7 @@ tr:hover td { background: #161a21; }
          background: #23262e; color: #c2c6cd; }
 .gate-fail { color: #e8706f; font-weight: 600; }
 .gate-pass { color: #57d98a; font-weight: 600; }
+.pending { color: #e3c04a; font-size: .78rem; }
 .bar { height: 6px; background: #262a33; border-radius: 3px; overflow: hidden; min-width: 80px; }
 .bar > span { display: block; height: 100%; background: #4c8dff; }
 .card { background: #161a21; border: 1px solid #262a33; border-radius: 10px;
@@ -63,7 +64,8 @@ ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
     <dt>Artifact type</dt><dd>skill</dd>
     <dt>Commit SHA</dt><dd><code>71b4623</code></dd>
     <dt>Static gate</dt><dd class="gate-pass">passed</dd>
-    <dt>Total score</dt><dd><strong>0.0 / 100</strong></dd>
+    <dt>Total score</dt><dd><strong>Pending judge</strong></dd>
+    <dt>Deterministic subtotal</dt><dd>80.0 / 100 from 3 of 7 dimensions not yet judged</dd><dt>Awaiting</dt><dd>d3_code_quality, d6_business_value, d7_innovation</dd>
     <dt>Rank</dt><dd>—</dd>
   </dl>
 </div>
@@ -78,11 +80,11 @@ ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
 <div class="scroll">
 <table>
   <thead><tr><th>Stage</th><th class="num">Elapsed</th><th class="num">Tokens</th><th>Source</th></tr></thead>
-  <tbody><tr><td>classify</td><td class="num">0.00ms</td><td class="num">0</td><td>none</td></tr><tr><td>static_scan</td><td class="num">30.0ms</td><td class="num">36,866</td><td>estimated</td></tr><tr><td>deterministic_scoring</td><td class="num">1.0ms</td><td class="num">0</td><td>none</td></tr></tbody>
+  <tbody><tr><td>classify</td><td class="num">0.00ms</td><td class="num">0</td><td>none</td></tr><tr><td>static_scan</td><td class="num">35.0ms</td><td class="num">36,866</td><td>estimated</td></tr><tr><td>deterministic_scoring</td><td class="num">1.0ms</td><td class="num">0</td><td>none</td></tr></tbody>
 </table>
 </div>
 <p class="sub">
-  Total 31.0ms &nbsp;·&nbsp;
+  Total 36.0ms &nbsp;·&nbsp;
   36,866 tokens (<code>estimated</code>) &nbsp;·&nbsp;
   <code>measured</code> means the endpoint reported it;
   <code>estimated</code> is a character heuristic for stages that call no model.
@@ -102,7 +104,7 @@ ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
     <dt>Rubric version</dt><dd>unversioned</dd>
     <dt>Prompt version</dt><dd>unversioned</dd>
     <dt>Model version</dt><dd>not-run</dd>
-    <dt>Scanned at</dt><dd>2026-09-19T02:08:34.416751+00:00</dd>
+    <dt>Scanned at</dt><dd>2026-09-19T02:24:49.408196+00:00</dd>
   </dl>
 </div>
 

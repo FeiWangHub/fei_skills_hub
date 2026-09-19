@@ -414,6 +414,106 @@ def test_dashboard_shows_formatted_cost() -> None:
     check("measured and estimated are split", "0 measured" in page and "82,903 estimated" in page)
 
 
+def test_partial_total_excludes_pending_dimensions() -> None:
+    from aggregator import compute_partial_total
+
+    # Only D2 scores 5; the rest are pending or zero.
+    scores = {"d2_structure_and_conformance": 5}
+    pending = [
+        "d1_security_and_compliance",
+        "d3_code_quality",
+        "d4_documentation",
+        "d5_testing_and_reliability",
+        "d6_business_value",
+        "d7_innovation",
+    ]
+    result = compute_partial_total(scores, DEFAULT_WEIGHTS, pending)
+
+    check("partial is not final while dimensions are pending", result["final"] is False)
+    check("pending list is preserved", result["pending_dimensions"] == pending)
+    check(
+        "a single perfect dimension scores 100 on its own weight",
+        result["partial_total"] == 100.0,
+        str(result["partial_total"]),
+    )
+
+    # With nothing pending, the same input is diluted across all seven.
+    complete = compute_partial_total(scores, DEFAULT_WEIGHTS, [])
+    check("no pending means final", complete["final"] is True)
+    check(
+        "final total is diluted by the zero dimensions",
+        complete["partial_total"] < result["partial_total"],
+        f"{complete['partial_total']} vs {result['partial_total']}",
+    )
+
+
+def test_pending_report_does_not_show_zero_total() -> None:
+    """A 0.0 total before judging reads as 'scored zero'. It must not be shown."""
+    record = {
+        "submission_id": "TEAM_001",
+        "team_name": "Alpha",
+        "artifact_type": "skill",
+        "commit_sha": "a" * 40,
+        "state": "awaiting-judge",
+        "confidence": "medium",
+        "human_review_required": False,
+        "total": 0,
+        "scores": {"d2_structure_and_conformance": 5},
+        "scoring_status": {
+            "partial_total": 100.0,
+            "final": False,
+            "pending_dimensions": ["d3_code_quality", "d6_business_value"],
+        },
+        "evidence": [],
+        "static_gate": {"passed": True, "hard_failed": False, "issues": [], "findings": []},
+        "provenance": {
+            "rubric_version": "1",
+            "prompt_version": "1",
+            "model_version": "not-run",
+            "scanned_at": "2026-09-19T00:00:00Z",
+        },
+    }
+
+    page = render_submission_report(record)
+    # Target the Total score field specifically: a plain substring check on
+    # "0.0 / 100" would also match the legitimate "100.0 / 100" subtotal.
+    check(
+        "report does not show a bare 0.0 total",
+        "<dt>Total score</dt><dd><strong>0.0 / 100</strong></dd>" not in page,
+    )
+    check(
+        "report shows the total as pending",
+        "<dt>Total score</dt><dd><strong>Pending judge</strong></dd>" in page,
+    )
+    check("report says the score is pending", "Pending judge" in page)
+    check("report names the awaited dimensions", "d3_code_quality" in page)
+    check("report shows the deterministic subtotal", "Deterministic subtotal" in page)
+
+
+def test_dashboard_marks_pending_scores() -> None:
+    records = [
+        {
+            "submission_id": "TEAM_001",
+            "team_name": "Alpha",
+            "artifact_type": "skill",
+            "total": 0,
+            "confidence": "medium",
+            "state": "awaiting-judge",
+            "human_review_required": False,
+            "static_gate": {"passed": True},
+            "scoring_status": {"pending_dimensions": ["d3_code_quality"], "final": False},
+        }
+    ]
+    page = render_dashboard(records, generated_at="2026-09-19T00:00:00Z")
+    check("dashboard marks the score as pending", '<span class="pending">pending</span>' in page)
+    # The score cell specifically: a bare ">0</td>" also matches the Tokens
+    # column, which is legitimately zero when no model was called.
+    check(
+        "dashboard does not show a bare zero in the score column",
+        '<td class="num"><span class="pending">pending</span></td>' in page,
+    )
+
+
 def main() -> int:
     test_aggregation_median()
     test_aggregation_agreement()
@@ -430,6 +530,9 @@ def main() -> int:
     test_generate_reports_writes_linked_pages()
     test_number_formatting_is_human_readable()
     test_dashboard_shows_formatted_cost()
+    test_partial_total_excludes_pending_dimensions()
+    test_pending_report_does_not_show_zero_total()
+    test_dashboard_marks_pending_scores()
 
     print()
     if FAILURES:

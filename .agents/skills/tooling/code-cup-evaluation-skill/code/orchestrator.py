@@ -19,7 +19,12 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from aggregator import rank_results
+from aggregator import (
+    DEFAULT_WEIGHTS,
+    compute_partial_total,
+    load_weights,
+    rank_results,
+)
 from allowlist import NetworkAllowlist
 from artifact_classifier import classify
 from deterministic_scorer import DETERMINISTIC_DIMENSIONS, score_deterministic
@@ -60,6 +65,7 @@ def evaluate_submission(
     submission,
     repo_root: Path,
     allowlist: NetworkAllowlist,
+    rubric_path: str | None = None,
 ) -> dict[str, object]:
     """Run the deterministic stages for one submission.
 
@@ -150,6 +156,15 @@ def evaluate_submission(
     record["judge_dimensions_pending"] = list(scored.judge_dimensions)
     record["evidence"] = scored.evidence
 
+    # A bare `total: 0` reads as "scored zero" when it actually means "not
+    # scored yet". Record the partial contribution explicitly so reports can
+    # say which it is.
+    record["scoring_status"] = compute_partial_total(
+        scores,
+        load_weights(rubric_path, submission.artifact_type) if rubric_path else DEFAULT_WEIGHTS,
+        list(scored.judge_dimensions),
+    )
+
     # No model has been called at this point. The judge stage is deliberately
     # absent from `metrics.stages` rather than recorded as a zero-duration
     # stage, because it did not run. A caller that runs the judge appends its
@@ -173,7 +188,13 @@ def evaluate_submission(
     return record
 
 
-def run_pipeline(manifest_path: str, allowlist_path: str, repo_root: str, out_dir: str) -> dict:
+def run_pipeline(
+    manifest_path: str,
+    allowlist_path: str,
+    repo_root: str,
+    out_dir: str,
+    rubric_path: str | None = None,
+) -> dict:
     manifest = load_manifest(manifest_path)
     problems = validate_manifest(manifest)
     if problems:
@@ -187,7 +208,8 @@ def run_pipeline(manifest_path: str, allowlist_path: str, repo_root: str, out_di
     output_root.mkdir(parents=True, exist_ok=True)
 
     results = [
-        evaluate_submission(s, repo_root_path, allowlist) for s in submissions
+        evaluate_submission(s, repo_root_path, allowlist, rubric_path)
+        for s in submissions
     ]
 
     state = {
@@ -227,7 +249,7 @@ def run_full_pipeline(
     via `judge_transport.JudgeTransport`. Until then, records remain in the
     `awaiting-judge` state rather than being given an invented score.
     """
-    bundle = run_pipeline(manifest_path, allowlist_path, repo_root, out_dir)
+    bundle = run_pipeline(manifest_path, allowlist_path, repo_root, out_dir, rubric_path)
 
     results = bundle["results"]
     rank_results(results)

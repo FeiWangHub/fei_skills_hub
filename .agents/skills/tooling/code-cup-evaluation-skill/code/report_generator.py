@@ -61,6 +61,7 @@ tr:hover td { background: #161a21; }
          background: #23262e; color: #c2c6cd; }
 .gate-fail { color: #e8706f; font-weight: 600; }
 .gate-pass { color: #57d98a; font-weight: 600; }
+.pending { color: #e3c04a; font-size: .78rem; }
 .bar { height: 6px; background: #262a33; border-radius: 3px; overflow: hidden; min-width: 80px; }
 .bar > span { display: block; height: 100%; background: #4c8dff; }
 .card { background: #161a21; border: 1px solid #262a33; border-radius: 10px;
@@ -133,6 +134,24 @@ def render_submission_report(record: dict[str, object]) -> str:
     confidence = str(record.get("confidence", "low"))
     gate = record.get("static_gate") or {}
     provenance = record.get("provenance") or {}
+    status = record.get("scoring_status") or {}
+
+    # A total of 0 before the judge runs means "not scored yet", not "scored
+    # zero". Showing a bare 0.0 misleads, so say which it is.
+    pending = list(status.get("pending_dimensions") or [])
+    is_final = bool(status.get("final", not pending))
+    if is_final:
+        total_display = f"{_escape(total)} / 100"
+        total_note = ""
+    else:
+        partial = status.get("partial_total", 0)
+        total_display = "Pending judge"
+        total_note = (
+            f'<dt>Deterministic subtotal</dt>'
+            f"<dd>{_escape(partial)} / 100 from "
+            f"{len(pending)} of 7 dimensions not yet judged</dd>"
+            f"<dt>Awaiting</dt><dd>{_escape(', '.join(pending))}</dd>"
+        )
 
     rows = []
     for key, label in SCORE_LABELS:
@@ -206,7 +225,8 @@ def render_submission_report(record: dict[str, object]) -> str:
     <dt>Artifact type</dt><dd>{_escape(record.get('artifact_type'))}</dd>
     <dt>Commit SHA</dt><dd><code>{_escape(record.get('commit_sha'))}</code></dd>
     <dt>Static gate</dt><dd class="{gate_class}">{_escape(gate_text)}</dd>
-    <dt>Total score</dt><dd><strong>{_escape(total)} / 100</strong></dd>
+    <dt>Total score</dt><dd><strong>{total_display}</strong></dd>
+    {total_note}
     <dt>Rank</dt><dd>{_escape(record.get('rank', '—'))}</dd>
   </dl>
 </div>
@@ -290,12 +310,19 @@ def render_dashboard(
             else 0
         )
 
+        record_status = record.get("scoring_status") or {}
+        pending = list(record_status.get("pending_dimensions") or [])
+        if pending:
+            score_cell = '<span class="pending">pending</span>'
+        else:
+            score_cell = _escape(record.get("total", 0))
+
         rows.append(
             "<tr>"
             f'<td class="num">{_escape(record.get("rank", "—"))}</td>'
             f'<td><a href="{_escape(link)}">{team}</a></td>'
             f"<td>{_escape(record.get('artifact_type'))}</td>"
-            f'<td class="num">{_escape(record.get("total", 0))}</td>'
+            f'<td class="num">{score_cell}</td>'
             f'<td><span class="badge {CONFIDENCE_CLASS.get(confidence, "conf-low")}">{_escape(confidence)}</span></td>'
             f'<td class="{"gate-pass" if passed else "gate-fail"}">{"pass" if passed else "blocked"}</td>'
             f'<td>{_escape(record.get("state"))}</td>'

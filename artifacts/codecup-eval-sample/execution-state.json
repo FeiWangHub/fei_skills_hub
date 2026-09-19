@@ -1,6 +1,6 @@
 {
   "state": {
-    "generated_at": "2026-09-19T02:08:34.460135+00:00",
+    "generated_at": "2026-09-19T02:24:49.458082+00:00",
     "total": 3,
     "hard_failed": 0,
     "awaiting_judge": 3,
@@ -14,9 +14,9 @@
   },
   "cost": {
     "submissions": 3,
-    "total_elapsed_ms": 74.02,
-    "total_elapsed_s": 0.074,
-    "mean_elapsed_ms": 24.67,
+    "total_elapsed_ms": 85.5,
+    "total_elapsed_s": 0.086,
+    "mean_elapsed_ms": 28.5,
     "total_tokens": 82903,
     "measured_tokens": 0,
     "estimated_tokens": 82903,
@@ -208,17 +208,27 @@
           "note": "test file"
         }
       ],
+      "scoring_status": {
+        "partial_total": 80.0,
+        "final": false,
+        "pending_dimensions": [
+          "d3_code_quality",
+          "d6_business_value",
+          "d7_innovation"
+        ],
+        "scored_weight_fraction": 0.5714
+      },
       "confidence": "low",
       "human_review_required": true,
       "provenance": {
         "rubric_version": "unversioned",
         "prompt_version": "unversioned",
         "model_version": "not-run",
-        "scanned_at": "2026-09-19T02:08:34.416751+00:00"
+        "scanned_at": "2026-09-19T02:24:49.408196+00:00"
       },
       "metrics": {
-        "total_elapsed_ms": 31.11,
-        "total_elapsed_s": 0.031,
+        "total_elapsed_ms": 36.37,
+        "total_elapsed_s": 0.036,
         "total_tokens": {
           "prompt_tokens": 36866,
           "completion_tokens": 0,
@@ -243,8 +253,8 @@
           },
           {
             "name": "static_scan",
-            "elapsed_ms": 30.13,
-            "elapsed_s": 0.03,
+            "elapsed_ms": 35.32,
+            "elapsed_s": 0.035,
             "tokens": {
               "prompt_tokens": 36866,
               "completion_tokens": 0,
@@ -256,7 +266,7 @@
           },
           {
             "name": "deterministic_scoring",
-            "elapsed_ms": 0.96,
+            "elapsed_ms": 1.03,
             "elapsed_s": 0.001,
             "tokens": {
               "prompt_tokens": 0,
@@ -486,17 +496,27 @@
           "note": "no test files detected"
         }
       ],
+      "scoring_status": {
+        "partial_total": 60.0,
+        "final": false,
+        "pending_dimensions": [
+          "d3_code_quality",
+          "d6_business_value",
+          "d7_innovation"
+        ],
+        "scored_weight_fraction": 0.5714
+      },
       "confidence": "low",
       "human_review_required": true,
       "provenance": {
         "rubric_version": "unversioned",
         "prompt_version": "unversioned",
         "model_version": "not-run",
-        "scanned_at": "2026-09-19T02:08:34.435976+00:00"
+        "scanned_at": "2026-09-19T02:24:49.431979+00:00"
       },
       "metrics": {
-        "total_elapsed_ms": 18.88,
-        "total_elapsed_s": 0.019,
+        "total_elapsed_ms": 23.28,
+        "total_elapsed_s": 0.023,
         "total_tokens": {
           "prompt_tokens": 21147,
           "completion_tokens": 0,
@@ -521,8 +541,8 @@
           },
           {
             "name": "static_scan",
-            "elapsed_ms": 18.02,
-            "elapsed_s": 0.018,
+            "elapsed_ms": 22.24,
+            "elapsed_s": 0.022,
             "tokens": {
               "prompt_tokens": 21147,
               "completion_tokens": 0,
@@ -534,7 +554,7 @@
           },
           {
             "name": "deterministic_scoring",
-            "elapsed_ms": 0.84,
+            "elapsed_ms": 1.02,
             "elapsed_s": 0.001,
             "tokens": {
               "prompt_tokens": 0,
@@ -897,17 +917,27 @@
           "note": "no test files detected"
         }
       ],
+      "scoring_status": {
+        "partial_total": 60.0,
+        "final": false,
+        "pending_dimensions": [
+          "d3_code_quality",
+          "d6_business_value",
+          "d7_innovation"
+        ],
+        "scored_weight_fraction": 0.5714
+      },
       "confidence": "low",
       "human_review_required": true,
       "provenance": {
         "rubric_version": "unversioned",
         "prompt_version": "unversioned",
         "model_version": "not-run",
-        "scanned_at": "2026-09-19T02:08:34.460090+00:00"
+        "scanned_at": "2026-09-19T02:24:49.458052+00:00"
       },
       "metrics": {
-        "total_elapsed_ms": 24.03,
-        "total_elapsed_s": 0.024,
+        "total_elapsed_ms": 25.85,
+        "total_elapsed_s": 0.026,
         "total_tokens": {
           "prompt_tokens": 24890,
           "completion_tokens": 0,
@@ -932,8 +962,8 @@
           },
           {
             "name": "static_scan",
-            "elapsed_ms": 23.03,
-            "elapsed_s": 0.023,
+            "elapsed_ms": 24.95,
+            "elapsed_s": 0.025,
             "tokens": {
               "prompt_tokens": 24890,
               "completion_tokens": 0,
@@ -945,7 +975,7 @@
           },
           {
             "name": "deterministic_scoring",
-            "elapsed_ms": 0.99,
+            "elapsed_ms": 0.88,
             "elapsed_s": 0.001,
             "tokens": {
               "prompt_tokens": 0,
