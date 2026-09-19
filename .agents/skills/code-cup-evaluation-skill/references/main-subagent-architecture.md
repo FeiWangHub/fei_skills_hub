@@ -54,14 +54,19 @@ Three ways to distribute that work:
 **Splitting by dimension triples the input cost**, because each scorer must read
 the same bundle to judge its own dimension. Splitting by submission does not.
 
-## The throughput assumption does not hold in VS Code Copilot
+## Parallelism is available in both hosts
 
-In VS Code, `runSubagent` is blocking — the caller waits for each result. There
-is no fan-out parallelism to gain. Any argument for sub-agents based on
-"score 150 submissions in parallel" is not available in this host.
+An earlier version of this document claimed VS Code subagents are blocking with
+no fan-out. **That was wrong.** The VS Code documentation states plainly:
 
-Where sub-agents *do* pay off is **context isolation**, which is a different
-problem.
+> "Parallel execution: VS Code can spawn multiple subagents in parallel for
+> tasks like analyzing security, performance, and accessibility simultaneously."
+
+OpenCode likewise supports concurrent subagent work — its built-in `general`
+subagent is described as being for running "multiple units of work in parallel".
+
+So batching does buy wall-clock time as well as context isolation. It does not
+change the cost per submission, which stays flat when splitting by submission.
 
 ## Why context isolation matters at scale
 
@@ -164,19 +169,44 @@ comparable their bands.
 |---|---|
 | 1-5 | Skill + program only. Sub-agents add cost and nothing else. |
 | 6-30 | Skill + program, batched with explicit context resets. Sub-agents optional. |
-| 31-100 | Program + 2-3 scorers split by submission, plus a verifier. |
+| 31-100 | Program + 2-3 scorers split by submission, run in parallel, plus a verifier. |
 | 100+ | Same, and a verifier becomes mandatory rather than optional. |
+
+Parallel dispatch matters from roughly 30 submissions onward: it turns a serial
+wait into a single batch window.
 
 ## Honest summary
 
 The current Skill + program design is correct for the common case and should
-stay the default. The hierarchy is worth adopting for one reason only:
-**context capacity at 150 submissions**, where a single agent cannot hold the
-work.
+stay the default. The hierarchy is worth adopting for two reasons:
 
-It is not worth adopting for speed (unavailable in this host) or for cost
-(equal at best, triple if split by dimension).
+1. **Context capacity.** A single agent holds roughly three submissions before
+   context pressure degrades its judgement. At 150 submissions it cannot hold
+   the work at all.
+2. **Wall-clock time.** Sub-agents run in parallel in both VS Code and OpenCode,
+   so batches complete concurrently rather than serially.
+
+It is **not** worth adopting to reduce cost: splitting by submission is
+cost-neutral, and splitting by dimension triples the input volume.
 
 The strongest hybrid is therefore: keep the Skill as the unit of knowledge, keep
-the program as the deterministic spine, and add sub-agents only as batch
-scorers when the cohort outgrows a single context.
+the program as the deterministic spine, and add sub-agents as parallel batch
+scorers once the cohort outgrows a single context.
+
+## Host differences
+
+Both hosts support the pattern; the definition format differs.
+
+| | VS Code / Copilot | OpenCode |
+|---|---|---|
+| File location | `.github/agents/*.agent.md` | `.opencode/agents/*.md` |
+| Frontmatter | `name`, `description`, `tools` (array), `agents` (allow-list) | `description`, `mode`, `model`, `temperature`, `permission` |
+| Tool control | `tools:` list | `permission:` map with `allow`/`ask`/`deny` |
+| Restrict subagents | `agents: [...]` on the parent | `permission.task` with glob patterns |
+| Hide from picker | `user-invocable: false` | `hidden: true` |
+| Model pinning | `model:` per agent | `model:` per agent |
+| Parallel subagents | yes | yes |
+
+The definitions in this repository use the VS Code `.agent.md` format. An
+OpenCode port would keep the same instructions and translate the frontmatter —
+the reasoning, the batching rules, and the prohibitions carry over unchanged.

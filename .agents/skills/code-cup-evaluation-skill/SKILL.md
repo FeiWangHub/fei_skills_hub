@@ -305,7 +305,7 @@ Up to roughly 30 submissions the Skill + program design is right and sub-agents 
 Two measured cost facts shape the design:
 
 - Splitting scoring **by dimension** triples input cost, because each scorer reads the same bundle to judge its own dimension. Splitting **by submission** does not.
-- In VS Code `runSubagent` is blocking, so there is no fan-out speedup. A case for sub-agents built on parallelism does not hold in this host.
+- Sub-agents can run in parallel (both VS Code and OpenCode support it), so batching also buys wall-clock time. Cost per submission is unchanged either way.
 
 Three agent definitions ship under `.agents/agents/`: `codecup-eval-orchestrator` (dispatches, never scores), `codecup-eval-scorer` (D3/D6/D7, at most three submissions), `codecup-eval-verifier` (adversarial evidence check, never scores). See `references/main-subagent-architecture.md`.
 

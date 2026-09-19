@@ -68,7 +68,8 @@ create one scorer per submission.
 
 ### Step 3 — dispatch
 
-Launch one `codecup-eval-scorer` per batch, in sequence, giving each:
+Launch one `codecup-eval-scorer` per batch **in parallel**, so batches complete
+concurrently rather than serially. Give each:
 
 - its list of submission ids
 - the `judge-requests/` path
