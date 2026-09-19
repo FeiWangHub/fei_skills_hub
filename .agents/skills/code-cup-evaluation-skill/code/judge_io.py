@@ -45,7 +45,13 @@ from judge_adapter import (
     load_prompt_template,
     parse_and_validate,
 )
-from metrics import SOURCE_MEASURED, SOURCE_NONE, TokenUsage
+from metrics import (
+    CHARS_PER_TOKEN,
+    SOURCE_ESTIMATED,
+    SOURCE_MEASURED,
+    SOURCE_NONE,
+    TokenUsage,
+)
 from orchestrator import SCORE_KEYS, run_pipeline
 
 AGENT_STAGE_NAME = "judge_wall_clock"
@@ -263,12 +269,50 @@ def merge(
         if isinstance(reported, dict):
             token_usage = TokenUsage.from_provider_usage(reported, "host-agent")
             token_source = SOURCE_MEASURED
+            token_note = "reported by the host agent"
         else:
-            token_usage = TokenUsage.unavailable()
-            token_source = SOURCE_NONE
+            # The host agent does not expose its own usage to the program, but
+            # the judging inputs and outputs are on disk, so the volume is
+            # measured rather than invented. Labelled `estimated` because the
+            # characters-per-token ratio is a heuristic, not provider billing.
+            request_path = record.get("judge_request")
+            prompt_bytes = 0
+            if request_path:
+                try:
+                    prompt_bytes = Path(str(request_path)).stat().st_size
+                except OSError:
+                    prompt_bytes = 0
+
+            completion_bytes = len(
+                json.dumps(
+                    {
+                        "scores": agent.get("scores"),
+                        "evidence": agent.get("evidence"),
+                        "confidence": agent.get("confidence"),
+                    },
+                    ensure_ascii=False,
+                )
+            )
+
+            prompt_tokens = int(prompt_bytes / CHARS_PER_TOKEN)
+            completion_tokens = int(completion_bytes / CHARS_PER_TOKEN)
+            token_usage = TokenUsage(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                total_tokens=prompt_tokens + completion_tokens,
+                source=SOURCE_ESTIMATED,
+                model="host-agent",
+                calls=1,
+            )
+            token_source = SOURCE_ESTIMATED
+            token_note = (
+                "estimated from the judge request and response sizes; "
+                "the host agent does not expose its own usage"
+            )
 
         # Replacing any prior judge stage keeps merge idempotent: re-running it
-        # must not double-count the same judging pass.
+        # must not double-count the same judging pass. Because the estimate is
+        # recomputed from the files, re-running is naturally stable.
         stages.append(
             {
                 "name": AGENT_STAGE_NAME,
@@ -279,11 +323,7 @@ def merge(
                     "wall-clock from prepare to merge, including idle time; "
                     "an upper bound, not model compute time"
                 ),
-                "token_source_note": (
-                    "reported by the host agent"
-                    if token_source == SOURCE_MEASURED
-                    else "host agent did not report token usage"
-                ),
+                "token_source_note": token_note,
             }
         )
         metrics["stages"] = stages

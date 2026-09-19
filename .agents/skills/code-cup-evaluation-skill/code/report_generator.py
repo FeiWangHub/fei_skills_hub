@@ -308,13 +308,17 @@ def _agent_phase_note(metrics: dict[str, object]) -> str:
         None,
     )
     tokens = (agent_stage or {}).get("tokens") or {}
-    reported = tokens.get("source") == "measured"
+    token_amount = int(tokens.get("total_tokens", 0) or 0)
 
-    token_text = (
-        f"{_format_int(tokens.get('total_tokens', 0))} tokens reported by the host agent"
-        if reported
-        else "the host agent did not report token usage"
-    )
+    if tokens.get("source") == "measured":
+        token_text = f"{_format_int(token_amount)} tokens reported by the host agent"
+    elif tokens.get("source") == "estimated":
+        token_text = (
+            f"about {_format_int(token_amount)} tokens, estimated from the judge "
+            "request and response sizes"
+        )
+    else:
+        token_text = "no token figure available for this phase"
 
     return (
         '<p class="sub">Judging ran inside the host agent and is '

@@ -400,9 +400,11 @@ Every run records what each stage cost. `execution-state.json` carries a batch `
 
 Token figures are never conflated: `measured` was reported by the model, `estimated` is a character heuristic for stages that call no model, and `none` means no figure was produced. Batch totals are summed **per stage**, so genuinely measured tokens are never hidden behind a submission's weakest label.
 
-The host-agent judging phase is timed by deriving it from the `prepare` and `merge` timestamps and is labelled as derived. Its token usage is recorded only if the agent reported it.
+The host-agent judging phase is timed by deriving it from the `prepare` and `merge` timestamps and is labelled as derived. Its token usage is estimated from the judge request and response sizes on disk when the agent does not report usage, so every report carries a cost figure for the judging pass — clearly marked `estimated` rather than presented as provider billing.
 
 Counts and durations are formatted for reading: thousands grouped (`36,866`), sub-second durations in milliseconds (`31.0ms`), longer ones in seconds or minutes.
+
+Sample runs committed under `artifacts/code-cup-eval-artifacts/` show the shape of a completed evaluation.
 
 ### What the orchestrator computes without an LLM
 

@@ -102,8 +102,19 @@ stage is **derived** from the `.run-started-at` stamp and the moment `merge`
 runs, and is labelled as derived in the output rather than presented as a
 measurement.
 
-Token usage for the agent phase is recorded only when the agent reported it.
-Otherwise it is `none`, not an estimate.
+Token usage for the agent phase:
+
+| Situation | Result |
+|---|---|
+| the agent supplied a `tokens` object | recorded as `measured` |
+| the agent did not report usage | estimated from the judge request and response sizes on disk, recorded as `estimated` |
+| neither is possible | `none` |
+
+The estimate uses the same characters-per-token heuristic as the static scan,
+so it is comparable with the other stages but is **not** provider billing. Both
+the request file and the agent's response are real artefacts with measurable
+size, so the figure rests on observed data rather than a guess. Because it is
+recomputed from the files, re-running `merge` produces the same number.
 
 ## Failure behaviour
 

@@ -1,0 +1,342 @@
+{
+  "state": {
+    "generated_at": "2026-09-19T04:06:49.548803+00:00",
+    "total": 1,
+    "hard_failed": 0,
+    "awaiting_judge": 0,
+    "failed": 0,
+    "deterministic_dimensions": [
+      "d1_security_and_compliance",
+      "d2_structure_and_conformance",
+      "d4_documentation",
+      "d5_testing_and_reliability"
+    ],
+    "judge_requests_prepared": 1,
+    "next_step": "Have the host agent score each file in judge-requests/ and write the results to judge-scores.json, then run: orchestrator.py merge",
+    "judge_merged": 1,
+    "done": 1
+  },
+  "cost": {
+    "submissions": 1,
+    "total_elapsed_ms": 3.0,
+    "total_elapsed_s": 0.003,
+    "mean_elapsed_ms": 3.0,
+    "total_tokens": 5895,
+    "measured_tokens": 0,
+    "estimated_tokens": 5895,
+    "note": "measured_tokens were reported by the model/endpoint; estimated_tokens are a character heuristic for stages that call no model"
+  },
+  "results": [
+    {
+      "submission_id": "TEAM_CAVEMAN",
+      "team_name": "Caveman",
+      "artifact_type": "skill",
+      "commit_sha": "working-tree",
+      "state": "done",
+      "classification": {
+        "detected": "skill",
+        "declared": "skill",
+        "rationale": "found SKILL.md / skill.md marker",
+        "mismatch": false
+      },
+      "static_gate": {
+        "passed": true,
+        "hard_failed": false,
+        "issues": [],
+        "findings": [],
+        "files_scanned": 2,
+        "bytes_read": 8924
+      },
+      "scores": {
+        "d1_security_and_compliance": 5,
+        "d2_structure_and_conformance": 5,
+        "d4_documentation": 5,
+        "d5_testing_and_reliability": 1,
+        "d3_code_quality": 3,
+        "d6_business_value": 5,
+        "d7_innovation": 3,
+        "total": 77.14
+      },
+      "deterministic_rationales": {
+        "d1_security_and_compliance": "no security findings from the static gate",
+        "d2_structure_and_conformance": "declared structure present for skill",
+        "d4_documentation": "README present with 2 doc file(s), 8924 bytes",
+        "d5_testing_and_reliability": "no tests detected"
+      },
+      "judge_dimensions_pending": [
+        "d3_code_quality",
+        "d6_business_value",
+        "d7_innovation"
+      ],
+      "evidence": [
+        {
+          "file_path": "(repository)",
+          "line_or_range": "-",
+          "note": "static gate passed with no findings"
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "-",
+          "note": "required skill marker present"
+        },
+        {
+          "file_path": "skill.md",
+          "line_or_range": "-",
+          "note": "required skill marker present"
+        },
+        {
+          "file_path": "README.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "(repository)",
+          "line_or_range": "-",
+          "note": "no test files detected"
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "108-117",
+          "note": "Auto-Clarity overrides compression for security warnings, irreversible actions, and multi-step sequences where fragment order could be misread, then resumes. Names the exact failure mode rather than a generic caveat."
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "29-31",
+          "note": "Negation preservation: never drop not/never/no/only/except, with the reason that a flipped meaning costs more than any token saved. Targets the highest-severity failure mode of aggressive compression."
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "33-37",
+          "note": "Keeps correct verb forms and plain phrasing when caveman phrasing is not shorter, since mangled grammar buys nothing. Inverts the usual failure of style prompts that reward the aesthetic over the outcome."
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "39-41",
+          "note": "Integrates ASD-STE100 as a clarity register that wins conflicts against caveman cuts, with one-idea-per-sentence and a 20-word target. Defines a precedence order rather than a flat list of preferences."
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "121-134",
+          "note": "Scopes compression to chat and reverts to normal prose for persisted artefacts (code, commits, docs, issue bodies), on the reasoning that those go to other humans."
+        },
+        {
+          "file_path": "README.md",
+          "line_or_range": "8-10",
+          "note": "States that no aggregate reduction or quality-equivalence claim is published. Honest for a compression tool, though the headline benefit is left unquantified."
+        },
+        {
+          "file_path": "README.md",
+          "line_or_range": "19",
+          "note": "Contradiction: the ultra row advertises 'Abbreviations (DB, auth, fn)' and 'Arrows for causality', both of which SKILL.md line 46 forbids at the same level."
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "46",
+          "note": "Authoritative rule states NO prose abbreviations and NO arrows at ultra, calling them zero-savings under the tokenizer. The two documents describe the same mode differently."
+        },
+        {
+          "file_path": "README.md",
+          "line_or_range": "47",
+          "note": "The README ultra example uses the arrow, contradicting both the SKILL.md ultra example on line 54 and the rule on line 46."
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "1-8",
+          "note": "Frontmatter declares name and description with trigger phrases but omits license, compatibility, and metadata, unlike the skills validated elsewhere in this repository."
+        },
+        {
+          "file_path": "(repository)",
+          "line_or_range": "-",
+          "note": "No test, eval, or verification harness of any kind. d5 is the lowest band because the central claim, token reduction, is unmeasured here, while the README points at benchmarks it does not contain."
+        },
+        {
+          "file_path": "(repository)",
+          "line_or_range": "-",
+          "note": "Business value: four sibling skills (caveman-commit, caveman-compress, caveman-help, caveman-review) plus caveman-stats build directly on this one, which is concrete evidence of reuse beyond the original artefact."
+        }
+      ],
+      "scoring_status": {
+        "partial_total": 77.14,
+        "final": true,
+        "pending_dimensions": [],
+        "scored_weight_fraction": 1.0
+      },
+      "confidence": "high",
+      "human_review_required": false,
+      "provenance": {
+        "rubric_version": "unversioned",
+        "prompt_version": "unversioned",
+        "model_version": "not-run",
+        "scanned_at": "2026-09-19T04:06:49.548589+00:00"
+      },
+      "metrics": {
+        "total_elapsed_ms": 3.0,
+        "total_elapsed_s": 0.003,
+        "total_tokens": {
+          "prompt_tokens": 5100,
+          "completion_tokens": 795,
+          "total_tokens": 5895,
+          "source": "estimated",
+          "model": "host-agent",
+          "calls": 1
+        },
+        "stages": [
+          {
+            "name": "classify",
+            "elapsed_ms": 0.02,
+            "elapsed_s": 0.0,
+            "tokens": {
+              "prompt_tokens": 0,
+              "completion_tokens": 0,
+              "total_tokens": 0,
+              "source": "none",
+              "model": "",
+              "calls": 0
+            }
+          },
+          {
+            "name": "static_scan",
+            "elapsed_ms": 2.62,
+            "elapsed_s": 0.003,
+            "tokens": {
+              "prompt_tokens": 2231,
+              "completion_tokens": 0,
+              "total_tokens": 2231,
+              "source": "estimated",
+              "model": "",
+              "calls": 0
+            }
+          },
+          {
+            "name": "deterministic_scoring",
+            "elapsed_ms": 0.3,
+            "elapsed_s": 0.0,
+            "tokens": {
+              "prompt_tokens": 0,
+              "completion_tokens": 0,
+              "total_tokens": 0,
+              "source": "none",
+              "model": "",
+              "calls": 0
+            }
+          },
+          {
+            "name": "judge_wall_clock",
+            "elapsed_ms": 62580.0,
+            "elapsed_s": 62.58,
+            "tokens": {
+              "prompt_tokens": 2869,
+              "completion_tokens": 795,
+              "total_tokens": 3664,
+              "source": "estimated",
+              "model": "host-agent",
+              "calls": 1
+            },
+            "timing_source": "wall-clock from prepare to merge, including idle time; an upper bound, not model compute time",
+            "token_source_note": "estimated from the judge request and response sizes; the host agent does not expose its own usage"
+          }
+        ],
+        "agent_wall_clock_s": 62.58
+      },
+      "judge_request": "/tmp/cave2/judge-requests/TEAM_CAVEMAN.md",
+      "evidence_files_included": [
+        "README.md",
+        "SKILL.md"
+      ],
+      "deterministic_evidence": [
+        {
+          "file_path": "(repository)",
+          "line_or_range": "-",
+          "note": "static gate passed with no findings"
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "-",
+          "note": "required skill marker present"
+        },
+        {
+          "file_path": "skill.md",
+          "line_or_range": "-",
+          "note": "required skill marker present"
+        },
+        {
+          "file_path": "README.md",
+          "line_or_range": "-",
+          "note": "documentation file"
+        },
+        {
+          "file_path": "(repository)",
+          "line_or_range": "-",
+          "note": "no test files detected"
+        }
+      ],
+      "judge_evidence": [
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "108-117",
+          "note": "Auto-Clarity overrides compression for security warnings, irreversible actions, and multi-step sequences where fragment order could be misread, then resumes. Names the exact failure mode rather than a generic caveat."
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "29-31",
+          "note": "Negation preservation: never drop not/never/no/only/except, with the reason that a flipped meaning costs more than any token saved. Targets the highest-severity failure mode of aggressive compression."
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "33-37",
+          "note": "Keeps correct verb forms and plain phrasing when caveman phrasing is not shorter, since mangled grammar buys nothing. Inverts the usual failure of style prompts that reward the aesthetic over the outcome."
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "39-41",
+          "note": "Integrates ASD-STE100 as a clarity register that wins conflicts against caveman cuts, with one-idea-per-sentence and a 20-word target. Defines a precedence order rather than a flat list of preferences."
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "121-134",
+          "note": "Scopes compression to chat and reverts to normal prose for persisted artefacts (code, commits, docs, issue bodies), on the reasoning that those go to other humans."
+        },
+        {
+          "file_path": "README.md",
+          "line_or_range": "8-10",
+          "note": "States that no aggregate reduction or quality-equivalence claim is published. Honest for a compression tool, though the headline benefit is left unquantified."
+        },
+        {
+          "file_path": "README.md",
+          "line_or_range": "19",
+          "note": "Contradiction: the ultra row advertises 'Abbreviations (DB, auth, fn)' and 'Arrows for causality', both of which SKILL.md line 46 forbids at the same level."
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "46",
+          "note": "Authoritative rule states NO prose abbreviations and NO arrows at ultra, calling them zero-savings under the tokenizer. The two documents describe the same mode differently."
+        },
+        {
+          "file_path": "README.md",
+          "line_or_range": "47",
+          "note": "The README ultra example uses the arrow, contradicting both the SKILL.md ultra example on line 54 and the rule on line 46."
+        },
+        {
+          "file_path": "SKILL.md",
+          "line_or_range": "1-8",
+          "note": "Frontmatter declares name and description with trigger phrases but omits license, compatibility, and metadata, unlike the skills validated elsewhere in this repository."
+        },
+        {
+          "file_path": "(repository)",
+          "line_or_range": "-",
+          "note": "No test, eval, or verification harness of any kind. d5 is the lowest band because the central claim, token reduction, is unmeasured here, while the README points at benchmarks it does not contain."
+        },
+        {
+          "file_path": "(repository)",
+          "line_or_range": "-",
+          "note": "Business value: four sibling skills (caveman-commit, caveman-compress, caveman-help, caveman-review) plus caveman-stats build directly on this one, which is concrete evidence of reuse beyond the original artefact."
+        }
+      ],
+      "rank": 1
+    }
+  ],
+  "reports": {
+    "dashboard": "/tmp/cave2/reports/index.html",
+    "TEAM_CAVEMAN": "/tmp/cave2/reports/TEAM_CAVEMAN.html"
+  }
+}

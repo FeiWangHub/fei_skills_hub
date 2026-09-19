@@ -1,6 +1,6 @@
 {
   "state": {
-    "generated_at": "2026-09-19T03:33:38.092766+00:00",
+    "generated_at": "2026-09-19T04:12:25.656379+00:00",
     "total": 3,
     "hard_failed": 0,
     "awaiting_judge": 0,
@@ -18,12 +18,12 @@
   },
   "cost": {
     "submissions": 3,
-    "total_elapsed_ms": 86.0,
-    "total_elapsed_s": 0.086,
-    "mean_elapsed_ms": 28.67,
-    "total_tokens": 82903,
+    "total_elapsed_ms": 82.0,
+    "total_elapsed_s": 0.082,
+    "mean_elapsed_ms": 27.33,
+    "total_tokens": 160858,
     "measured_tokens": 0,
-    "estimated_tokens": 82903,
+    "estimated_tokens": 160858,
     "note": "measured_tokens were reported by the model/endpoint; estimated_tokens are a character heuristic for stages that call no model"
   },
   "results": [
@@ -224,7 +224,7 @@
         {
           "file_path": "code/tests/test_judge_io.py",
           "line_or_range": "1-40",
-          "note": "five stdlib test suites total; this one covers bundle capping, entry-file truncation, and merge idempotency"
+          "note": "five stdlib test suites total; this one covers bundle capping, entry-file truncation, token attribution, and merge idempotency"
         },
         {
           "file_path": "code/deterministic_scorer.py",
@@ -249,23 +249,23 @@
         "rubric_version": "unversioned",
         "prompt_version": "unversioned",
         "model_version": "not-run",
-        "scanned_at": "2026-09-19T03:33:38.043466+00:00"
+        "scanned_at": "2026-09-19T04:12:25.609754+00:00"
       },
       "metrics": {
-        "total_elapsed_ms": 38.0,
-        "total_elapsed_s": 0.038,
+        "total_elapsed_ms": 36.0,
+        "total_elapsed_s": 0.036,
         "total_tokens": {
-          "prompt_tokens": 36866,
-          "completion_tokens": 0,
-          "total_tokens": 36866,
+          "prompt_tokens": 66203,
+          "completion_tokens": 300,
+          "total_tokens": 66503,
           "source": "estimated",
-          "model": "",
-          "calls": 0
+          "model": "host-agent",
+          "calls": 1
         },
         "stages": [
           {
             "name": "classify",
-            "elapsed_ms": 0.02,
+            "elapsed_ms": 0.03,
             "elapsed_s": 0.0,
             "tokens": {
               "prompt_tokens": 0,
@@ -278,8 +278,8 @@
           },
           {
             "name": "static_scan",
-            "elapsed_ms": 36.62,
-            "elapsed_s": 0.037,
+            "elapsed_ms": 35.46,
+            "elapsed_s": 0.035,
             "tokens": {
               "prompt_tokens": 36866,
               "completion_tokens": 0,
@@ -291,7 +291,7 @@
           },
           {
             "name": "deterministic_scoring",
-            "elapsed_ms": 1.2,
+            "elapsed_ms": 1.11,
             "elapsed_s": 0.001,
             "tokens": {
               "prompt_tokens": 0,
@@ -304,23 +304,23 @@
           },
           {
             "name": "judge_wall_clock",
-            "elapsed_ms": 88218.0,
-            "elapsed_s": 88.218,
+            "elapsed_ms": 161377.0,
+            "elapsed_s": 161.377,
             "tokens": {
-              "prompt_tokens": 0,
-              "completion_tokens": 0,
-              "total_tokens": 0,
-              "source": "none",
-              "model": "",
-              "calls": 0
+              "prompt_tokens": 29337,
+              "completion_tokens": 300,
+              "total_tokens": 29637,
+              "source": "estimated",
+              "model": "host-agent",
+              "calls": 1
             },
             "timing_source": "wall-clock from prepare to merge, including idle time; an upper bound, not model compute time",
-            "token_source_note": "host agent did not report token usage"
+            "token_source_note": "estimated from the judge request and response sizes; the host agent does not expose its own usage"
           }
         ],
-        "agent_wall_clock_s": 88.218
+        "agent_wall_clock_s": 161.377
       },
-      "judge_request": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/judge-requests/TEAM_001.md",
+      "judge_request": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/code-cup-eval-artifacts/codecup-eval-sample/judge-requests/TEAM_001.md",
       "evidence_files_included": [
         "SKILL.md",
         "code/README.md",
@@ -415,7 +415,7 @@
         {
           "file_path": "code/tests/test_judge_io.py",
           "line_or_range": "1-40",
-          "note": "five stdlib test suites total; this one covers bundle capping, entry-file truncation, and merge idempotency"
+          "note": "five stdlib test suites total; this one covers bundle capping, entry-file truncation, token attribution, and merge idempotency"
         },
         {
           "file_path": "code/deterministic_scorer.py",
@@ -678,23 +678,23 @@
         "rubric_version": "unversioned",
         "prompt_version": "unversioned",
         "model_version": "not-run",
-        "scanned_at": "2026-09-19T03:33:38.067571+00:00"
+        "scanned_at": "2026-09-19T04:12:25.632160+00:00"
       },
       "metrics": {
-        "total_elapsed_ms": 23.0,
-        "total_elapsed_s": 0.023,
+        "total_elapsed_ms": 22.0,
+        "total_elapsed_s": 0.022,
         "total_tokens": {
-          "prompt_tokens": 21147,
-          "completion_tokens": 0,
-          "total_tokens": 21147,
+          "prompt_tokens": 43226,
+          "completion_tokens": 220,
+          "total_tokens": 43446,
           "source": "estimated",
-          "model": "",
-          "calls": 0
+          "model": "host-agent",
+          "calls": 1
         },
         "stages": [
           {
             "name": "classify",
-            "elapsed_ms": 0.02,
+            "elapsed_ms": 0.01,
             "elapsed_s": 0.0,
             "tokens": {
               "prompt_tokens": 0,
@@ -707,8 +707,8 @@
           },
           {
             "name": "static_scan",
-            "elapsed_ms": 22.42,
-            "elapsed_s": 0.022,
+            "elapsed_ms": 21.05,
+            "elapsed_s": 0.021,
             "tokens": {
               "prompt_tokens": 21147,
               "completion_tokens": 0,
@@ -720,7 +720,7 @@
           },
           {
             "name": "deterministic_scoring",
-            "elapsed_ms": 1.1,
+            "elapsed_ms": 0.92,
             "elapsed_s": 0.001,
             "tokens": {
               "prompt_tokens": 0,
@@ -733,23 +733,23 @@
           },
           {
             "name": "judge_wall_clock",
-            "elapsed_ms": 88218.0,
-            "elapsed_s": 88.218,
+            "elapsed_ms": 161377.0,
+            "elapsed_s": 161.377,
             "tokens": {
-              "prompt_tokens": 0,
-              "completion_tokens": 0,
-              "total_tokens": 0,
-              "source": "none",
-              "model": "",
-              "calls": 0
+              "prompt_tokens": 22079,
+              "completion_tokens": 220,
+              "total_tokens": 22299,
+              "source": "estimated",
+              "model": "host-agent",
+              "calls": 1
             },
             "timing_source": "wall-clock from prepare to merge, including idle time; an upper bound, not model compute time",
-            "token_source_note": "host agent did not report token usage"
+            "token_source_note": "estimated from the judge request and response sizes; the host agent does not expose its own usage"
           }
         ],
-        "agent_wall_clock_s": 88.218
+        "agent_wall_clock_s": 161.377
       },
-      "judge_request": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/judge-requests/TEAM_002.md",
+      "judge_request": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/code-cup-eval-artifacts/codecup-eval-sample/judge-requests/TEAM_002.md",
       "evidence_files_included": [
         "SKILL.md",
         "references/01-requirements.md",
@@ -1247,18 +1247,18 @@
         "rubric_version": "unversioned",
         "prompt_version": "unversioned",
         "model_version": "not-run",
-        "scanned_at": "2026-09-19T03:33:38.092742+00:00"
+        "scanned_at": "2026-09-19T04:12:25.656358+00:00"
       },
       "metrics": {
-        "total_elapsed_ms": 25.0,
-        "total_elapsed_s": 0.025,
+        "total_elapsed_ms": 24.0,
+        "total_elapsed_s": 0.024,
         "total_tokens": {
-          "prompt_tokens": 24890,
-          "completion_tokens": 0,
-          "total_tokens": 24890,
+          "prompt_tokens": 50683,
+          "completion_tokens": 226,
+          "total_tokens": 50909,
           "source": "estimated",
-          "model": "",
-          "calls": 0
+          "model": "host-agent",
+          "calls": 1
         },
         "stages": [
           {
@@ -1276,8 +1276,8 @@
           },
           {
             "name": "static_scan",
-            "elapsed_ms": 24.07,
-            "elapsed_s": 0.024,
+            "elapsed_ms": 23.17,
+            "elapsed_s": 0.023,
             "tokens": {
               "prompt_tokens": 24890,
               "completion_tokens": 0,
@@ -1289,7 +1289,7 @@
           },
           {
             "name": "deterministic_scoring",
-            "elapsed_ms": 0.83,
+            "elapsed_ms": 0.79,
             "elapsed_s": 0.001,
             "tokens": {
               "prompt_tokens": 0,
@@ -1302,23 +1302,23 @@
           },
           {
             "name": "judge_wall_clock",
-            "elapsed_ms": 88218.0,
-            "elapsed_s": 88.218,
+            "elapsed_ms": 161377.0,
+            "elapsed_s": 161.377,
             "tokens": {
-              "prompt_tokens": 0,
-              "completion_tokens": 0,
-              "total_tokens": 0,
-              "source": "none",
-              "model": "",
-              "calls": 0
+              "prompt_tokens": 25793,
+              "completion_tokens": 226,
+              "total_tokens": 26019,
+              "source": "estimated",
+              "model": "host-agent",
+              "calls": 1
             },
             "timing_source": "wall-clock from prepare to merge, including idle time; an upper bound, not model compute time",
-            "token_source_note": "host agent did not report token usage"
+            "token_source_note": "estimated from the judge request and response sizes; the host agent does not expose its own usage"
           }
         ],
-        "agent_wall_clock_s": 88.218
+        "agent_wall_clock_s": 161.377
       },
-      "judge_request": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/judge-requests/TEAM_003.md",
+      "judge_request": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/code-cup-eval-artifacts/codecup-eval-sample/judge-requests/TEAM_003.md",
       "evidence_files_included": [
         "SKILL.md",
         "references/01-standard-claude-skill-spec.md",
@@ -1433,9 +1433,9 @@
     }
   ],
   "reports": {
-    "dashboard": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/reports/index.html",
-    "TEAM_001": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/reports/TEAM_001.html",
-    "TEAM_002": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/reports/TEAM_002.html",
-    "TEAM_003": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/codecup-eval-sample/reports/TEAM_003.html"
+    "dashboard": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/code-cup-eval-artifacts/codecup-eval-sample/reports/index.html",
+    "TEAM_001": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/code-cup-eval-artifacts/codecup-eval-sample/reports/TEAM_001.html",
+    "TEAM_002": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/code-cup-eval-artifacts/codecup-eval-sample/reports/TEAM_002.html",
+    "TEAM_003": "/Users/Fei/Dev/repos/feiGitHub/fei_skills_hub/artifacts/code-cup-eval-artifacts/codecup-eval-sample/reports/TEAM_003.html"
   }
 }

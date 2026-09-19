@@ -315,6 +315,79 @@ def test_merge_is_idempotent() -> None:
         check("measured tokens equal the reported amount", second_tokens == 1100, str(second_tokens))
 
 
+def test_judge_tokens_estimated_when_agent_does_not_report() -> None:
+    """The host agent cannot report usage, so estimate from real file sizes."""
+    from judge_io import merge, prepare
+
+    with tempfile.TemporaryDirectory() as tmp:
+        repo_root = Path(tmp) / "repos"
+        _write(repo_root / "TEAM_001" / "SKILL.md", "# Skill\n" * 200)
+        _write(repo_root / "TEAM_001" / "README.md", "# Readme\n" * 100)
+
+        manifest = Path(tmp) / "manifest.json"
+        manifest.write_text(
+            json.dumps(
+                {
+                    "submissions": [
+                        {
+                            "submission_id": "TEAM_001",
+                            "team_name": "Alpha",
+                            "artifact_type": "skill",
+                            "repo_url": "https://git.internal.example/a.git",
+                            "commit_sha": "abc",
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        allowlist = Path(tmp) / "allowlist.json"
+        allowlist.write_text(
+            json.dumps({"allowed_domains": [".example"], "blocked_domains": []}),
+            encoding="utf-8",
+        )
+        out = Path(tmp) / "out"
+
+        prepare(str(manifest), str(allowlist), str(repo_root), str(out), rubric_path=None)
+
+        # No `tokens` key: the agent did not report usage.
+        (out / "judge-scores.json").write_text(
+            json.dumps({"TEAM_001": _valid_entry()}), encoding="utf-8"
+        )
+
+        bundle = merge(str(out), rubric_path=None, report=False)
+        record = bundle["results"][0]
+        agent_stage = next(
+            s for s in record["metrics"]["stages"] if s["name"] == AGENT_STAGE_NAME
+        )
+        tokens = agent_stage["tokens"]
+
+        check(
+            "judge tokens are estimated rather than none",
+            tokens["source"] == "estimated",
+            str(tokens),
+        )
+        check(
+            "judge token estimate is non-zero when files exist",
+            tokens["total_tokens"] > 0,
+            str(tokens),
+        )
+        check(
+            "prompt and completion are separated",
+            tokens["prompt_tokens"] > 0 and tokens["completion_tokens"] > 0,
+            str(tokens),
+        )
+        check(
+            "the estimate is explained in the stage note",
+            "estimated from the judge request" in agent_stage.get("token_source_note", ""),
+        )
+        check(
+            "batch cost picks up the estimated judge tokens",
+            bundle["cost"]["estimated_tokens"] >= tokens["total_tokens"],
+            str(bundle["cost"]),
+        )
+
+
 def main() -> int:
     test_evidence_bundle_prioritises_entry_files()
     test_evidence_bundle_skips_vendored_dirs()
@@ -327,6 +400,7 @@ def main() -> int:
     test_load_agent_scores_accepts_list()
     test_load_agent_scores_rejects_bad_entries()
     test_merge_is_idempotent()
+    test_judge_tokens_estimated_when_agent_does_not_report()
 
     print()
     if FAILURES:

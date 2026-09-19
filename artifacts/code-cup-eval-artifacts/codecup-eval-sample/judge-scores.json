@@ -23,7 +23,7 @@
       {
         "file_path": "code/tests/test_judge_io.py",
         "line_or_range": "1-40",
-        "note": "five stdlib test suites total; this one covers bundle capping, entry-file truncation, and merge idempotency"
+        "note": "five stdlib test suites total; this one covers bundle capping, entry-file truncation, token attribution, and merge idempotency"
       },
       {
         "file_path": "code/deterministic_scorer.py",

@@ -80,16 +80,16 @@ ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
 <div class="scroll">
 <table>
   <thead><tr><th>Stage</th><th class="num">Elapsed</th><th class="num">Tokens</th><th>Source</th></tr></thead>
-  <tbody><tr><td>classify</td><td class="num">0.00ms</td><td class="num">0</td><td>none</td></tr><tr><td>static_scan</td><td class="num">22.0ms</td><td class="num">21,147</td><td>estimated</td></tr><tr><td>deterministic_scoring</td><td class="num">1.0ms</td><td class="num">0</td><td>none</td></tr><tr><td>judge_wall_clock</td><td class="num">1m 28.2s</td><td class="num">0</td><td>none</td></tr></tbody>
+  <tbody><tr><td>classify</td><td class="num">0.00ms</td><td class="num">0</td><td>none</td></tr><tr><td>static_scan</td><td class="num">21.0ms</td><td class="num">21,147</td><td>estimated</td></tr><tr><td>deterministic_scoring</td><td class="num">1.0ms</td><td class="num">0</td><td>none</td></tr><tr><td>judge_wall_clock</td><td class="num">2m 41.4s</td><td class="num">22,299</td><td>estimated</td></tr></tbody>
 </table>
 </div>
 <p class="sub">
-  Total 23.0ms &nbsp;·&nbsp;
-  21,147 tokens (<code>estimated</code>) &nbsp;·&nbsp;
+  Total 22.0ms &nbsp;·&nbsp;
+  43,446 tokens (<code>estimated</code>) &nbsp;·&nbsp;
   <code>measured</code> means the model reported it;
   <code>estimated</code> is a character heuristic for stages that call no model.
 </p>
-<p class="sub">Judging ran inside the host agent and is <strong>not</strong> included in the total above. Wall-clock from prepare to merge: 1m 28.2s (includes idle time, so it is an upper bound rather than compute time) — the host agent did not report token usage.</p>
+<p class="sub">Judging ran inside the host agent and is <strong>not</strong> included in the total above. Wall-clock from prepare to merge: 2m 41.4s (includes idle time, so it is an upper bound rather than compute time) — about 22,299 tokens, estimated from the judge request and response sizes.</p>
 <h2>Static gate findings</h2>
 <div class="scroll">
 <table>
@@ -105,7 +105,7 @@ ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
     <dt>Rubric version</dt><dd>unversioned</dd>
     <dt>Prompt version</dt><dd>unversioned</dd>
     <dt>Model version</dt><dd>not-run</dd>
-    <dt>Scanned at</dt><dd>2026-09-19T03:33:38.067571+00:00</dd>
+    <dt>Scanned at</dt><dd>2026-09-19T04:12:25.632160+00:00</dd>
   </dl>
 </div>
 
