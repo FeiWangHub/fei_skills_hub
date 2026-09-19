@@ -160,6 +160,116 @@ def test_scanner_flags_prompt_injection_for_review() -> None:
         )
 
 
+def test_context_aware_severity() -> None:
+    """The same string must not be judged the same way in every file type."""
+    al = make_allowlist()
+
+    # A fake key inside a test fixture is expected, not a leak.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "SKILL.md").write_text("# s\n", encoding="utf-8")
+        tests = root / "tests"
+        tests.mkdir()
+        (tests / "test_fixture.py").write_text(
+            'AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"\n', encoding="utf-8"
+        )
+        result = scan_repository(root, al)
+        check("fake key in a test fixture is not a hard fail", result.hard_failed is False)
+        check(
+            "fake key in a test fixture still reaches review",
+            any("aws_access_key" in f["category"] for f in result.findings),
+        )
+
+    # A real-looking key in application code is still a hard fail.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "SKILL.md").write_text("# s\n", encoding="utf-8")
+        (root / "settings.py").write_text(
+            'AWS_ACCESS_KEY_ID = "AKIAZZZZZZZZZZZZZZZZ"\n', encoding="utf-8"
+        )
+        result = scan_repository(root, al)
+        check("non-placeholder key in code is a hard fail", result.hard_failed is True)
+
+    # A JSON Schema identifier is a declaration, not egress.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "SKILL.md").write_text("# s\n", encoding="utf-8")
+        (root / "schema.json").write_text(
+            '{\n  "$schema": "https://json-schema.org/draft/2020-12/schema"\n}\n',
+            encoding="utf-8",
+        )
+        result = scan_repository(root, al)
+        check("JSON Schema $schema is not treated as egress", result.hard_failed is False)
+
+    # A documented reference URL in markdown is not egress.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "SKILL.md").write_text("# s\n", encoding="utf-8")
+        (root / "references").mkdir()
+        (root / "references" / "spec.md").write_text(
+            "Sources: [docs](https://docs.anthropic.com/en/docs)\n", encoding="utf-8"
+        )
+        result = scan_repository(root, al)
+        check("reference URL in docs is not treated as egress", result.hard_failed is False)
+
+    # But a real outbound call in code still fails.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "SKILL.md").write_text("# s\n", encoding="utf-8")
+        (root / "client.py").write_text(
+            'requests.post("https://api.someexternalvendor.com/v1/chat")\n', encoding="utf-8"
+        )
+        result = scan_repository(root, al)
+        check("real outbound call in code is a hard fail", result.hard_failed is True)
+
+    # A curl|sh in a security document is a described pattern, not a live risk.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "SKILL.md").write_text("# s\n", encoding="utf-8")
+        (root / "checklist.md").write_text(
+            "- Remote-fetch-and-execute patterns: `curl ... | sh`, `curl ... | bash`\n",
+            encoding="utf-8",
+        )
+        result = scan_repository(root, al)
+        check("curl|sh described in a doc is not a hard fail", result.hard_failed is False)
+
+
+def test_context_classification() -> None:
+    from static_scanner import (
+        CONTEXT_CODE,
+        CONTEXT_CONFIG,
+        CONTEXT_DOC,
+        CONTEXT_TEMPLATE,
+        CONTEXT_TEST,
+        classify_context,
+    )
+
+    check("test path classified as test", classify_context("tests/test_a.py") == CONTEXT_TEST)
+    check("doc path classified as doc", classify_context("references/a.md") == CONTEXT_DOC)
+    check("config path classified as config", classify_context("opencode.json") == CONTEXT_CONFIG)
+    check("source path classified as code", classify_context("src/main.py") == CONTEXT_CODE)
+    check(
+        "template path classified as template",
+        classify_context("templates/submission-manifest-template.yaml") == CONTEXT_TEMPLATE,
+    )
+
+
+def test_template_placeholders_are_not_hard_fails() -> None:
+    """Templates exist to hold placeholder values, not live endpoints."""
+    from static_scanner import CONTEXT_TEMPLATE, _severity_for
+
+    check(
+        "template URL is review, not hard fail",
+        _severity_for(CONTEXT_TEMPLATE, "network", 'repo_url: "https://git.internal/x"')
+        == "review",
+    )
+    check(
+        "template secret is review, not hard fail",
+        _severity_for(CONTEXT_TEMPLATE, "secret", 'api_key: "sk-ant-abc123def456ghi789"')
+        == "review",
+    )
+
+
 def _valid_payload(evidence) -> str:
     return json.dumps(
         {
@@ -218,6 +328,9 @@ def main() -> int:
     test_scanner_blocks_secret_and_external_host()
     test_scanner_allows_clean_internal_repo()
     test_scanner_flags_prompt_injection_for_review()
+    test_context_aware_severity()
+    test_context_classification()
+    test_template_placeholders_are_not_hard_fails()
     test_judge_contract()
 
     print()

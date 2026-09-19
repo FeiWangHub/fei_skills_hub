@@ -266,6 +266,104 @@ def test_dashboard_renders() -> None:
     check("dashboard marks gate failure", "blocked</td>" in page)
 
 
+def test_dashboard_links_to_each_report() -> None:
+    records = [
+        {
+            "submission_id": "TEAM_001",
+            "team_name": "Alpha",
+            "artifact_type": "skill",
+            "total": 88.0,
+            "rank": 1,
+            "confidence": "high",
+            "state": "done",
+            "human_review_required": False,
+            "static_gate": {"passed": True},
+        },
+        {
+            "submission_id": "TEAM/002 weird",
+            "team_name": "Beta",
+            "artifact_type": "source_project",
+            "total": 0,
+            "rank": 2,
+            "confidence": "low",
+            "state": "hard-failed",
+            "human_review_required": False,
+            "static_gate": {"passed": False},
+        },
+    ]
+    page = render_dashboard(records, generated_at="2026-09-19T00:00:00Z")
+
+    check("dashboard links to first report", 'href="TEAM_001.html"' in page)
+    check(
+        "dashboard sanitises unsafe characters in links",
+        'href="TEAM_002_weird.html"' in page,
+    )
+    check(
+        "dashboard does not emit a raw unsafe path",
+        "TEAM/002" not in page,
+    )
+
+
+def test_report_filename_is_shared() -> None:
+    from report_generator import report_filename
+
+    check("filename is stable for safe ids", report_filename("TEAM_001") == "TEAM_001.html")
+    check(
+        "filename sanitises separators",
+        report_filename("a/b\\c") == "a_b_c.html",
+        report_filename("a/b\\c"),
+    )
+    check("filename handles empty ids", report_filename("") == "unknown.html")
+
+
+def test_generate_reports_writes_linked_pages() -> None:
+    from report_generator import generate_reports, report_filename
+
+    bundle = {
+        "state": {},
+        "results": [
+            {
+                "submission_id": "TEAM_001",
+                "team_name": "Alpha",
+                "artifact_type": "skill",
+                "commit_sha": "a" * 40,
+                "state": "awaiting-judge",
+                "confidence": "medium",
+                "human_review_required": False,
+                "total": 0,
+                "scores": {k: 3 for k in DEFAULT_WEIGHTS},
+                "evidence": [],
+                "static_gate": {"passed": True, "hard_failed": False, "issues": [], "findings": []},
+                "provenance": {
+                    "rubric_version": "1",
+                    "prompt_version": "1",
+                    "model_version": "not-run",
+                    "scanned_at": "2026-09-19T00:00:00Z",
+                },
+            }
+        ],
+    }
+
+    with tempfile.TemporaryDirectory() as tmp:
+        written = generate_reports(bundle, tmp)
+        out = Path(tmp)
+
+        check("dashboard was written", (out / "index.html").is_file())
+        check(
+            "per-submission report was written",
+            (out / report_filename("TEAM_001")).is_file(),
+        )
+
+        dashboard = (out / "index.html").read_text(encoding="utf-8")
+        target = report_filename("TEAM_001")
+        check("dashboard references the written page", f'href="{target}"' in dashboard)
+        check(
+            "referenced page actually exists",
+            (out / target).is_file(),
+        )
+        check("written map includes the dashboard", "dashboard" in written)
+
+
 def main() -> int:
     test_aggregation_median()
     test_aggregation_agreement()
@@ -277,6 +375,9 @@ def main() -> int:
     test_egress_is_blocked()
     test_report_escapes_hostile_input()
     test_dashboard_renders()
+    test_dashboard_links_to_each_report()
+    test_report_filename_is_shared()
+    test_generate_reports_writes_linked_pages()
 
     print()
     if FAILURES:

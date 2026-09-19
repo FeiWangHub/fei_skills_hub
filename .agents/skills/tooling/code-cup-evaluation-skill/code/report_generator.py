@@ -67,6 +67,8 @@ tr:hover td { background: #161a21; }
 .kv dd { margin: 0; }
 code { background: #23262e; padding: .1rem .35rem; border-radius: 4px;
        font-size: .8rem; font-family: ui-monospace, SFMono-Regular, monospace; }
+a { color: #4c8dff; text-decoration: none; }
+a:hover { text-decoration: underline; }
 ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
 .review { background: #3a1414; border-color: #5a2020; }
 """
@@ -184,8 +186,19 @@ def render_submission_report(record: dict[str, object]) -> str:
     return _render_page(f"{record.get('team_name')} — Code Cup report", body)
 
 
+def report_filename(submission_id: object) -> str:
+    """Map a submission id to its report file name.
+
+    Used by both the per-submission writer and the dashboard links so the two
+    can never drift apart.
+    """
+    raw = str(submission_id if submission_id is not None else "unknown")
+    safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in raw)
+    return f"{safe or 'unknown'}.html"
+
+
 def render_dashboard(records: list[dict[str, object]], generated_at: str | None = None) -> str:
-    """Render the sortable-free summary leaderboard page."""
+    """Render the summary leaderboard, linking each row to its report page."""
     stamp = generated_at or datetime.now(timezone.utc).isoformat()
 
     rows = []
@@ -193,15 +206,19 @@ def render_dashboard(records: list[dict[str, object]], generated_at: str | None 
         gate = record.get("static_gate") or {}
         passed = bool(gate.get("passed")) if isinstance(gate, dict) else False
         confidence = str(record.get("confidence", "low"))
+        link = report_filename(record.get("submission_id"))
+        team = _escape(record.get("team_name"))
+
         rows.append(
             "<tr>"
             f'<td class="num">{_escape(record.get("rank", "—"))}</td>'
-            f"<td>{_escape(record.get('team_name'))}</td>"
+            f'<td><a href="{_escape(link)}">{team}</a></td>'
             f"<td>{_escape(record.get('artifact_type'))}</td>"
             f'<td class="num">{_escape(record.get("total", 0))}</td>'
             f'<td><span class="badge {CONFIDENCE_CLASS.get(confidence, "conf-low")}">{_escape(confidence)}</span></td>'
             f'<td class="{"gate-pass" if passed else "gate-fail"}">{"pass" if passed else "blocked"}</td>'
             f"<td>{_escape(record.get('state'))}</td>"
+            f'<td><a href="{_escape(link)}">details</a></td>'
             "</tr>"
         )
 
@@ -219,11 +236,12 @@ def render_dashboard(records: list[dict[str, object]], generated_at: str | None 
   {total_count} submissions &nbsp;·&nbsp; {blocked} blocked by the static gate
   &nbsp;·&nbsp; {review} flagged for human review &nbsp;·&nbsp; generated {_escape(stamp)}
 </div>
+<p class="sub">Select a team name to open its full report.</p>
 <table>
   <thead>
     <tr>
       <th class="num">#</th><th>Team</th><th>Artifact</th>
-      <th class="num">Score</th><th>Confidence</th><th>Gate</th><th>State</th>
+      <th class="num">Score</th><th>Confidence</th><th>Gate</th><th>State</th><th></th>
     </tr>
   </thead>
   <tbody>{''.join(rows)}</tbody>
@@ -249,8 +267,7 @@ def generate_reports(
 
     for record in results:
         submission_id = str(record.get("submission_id", "unknown"))
-        safe_name = "".join(c if c.isalnum() or c in "-_" else "_" for c in submission_id)
-        page_path = out / f"{safe_name}.html"
+        page_path = out / report_filename(submission_id)
         page_path.write_text(render_submission_report(record), encoding="utf-8")
         written[submission_id] = str(page_path)
 

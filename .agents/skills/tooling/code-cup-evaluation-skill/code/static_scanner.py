@@ -4,12 +4,33 @@ Behaviour:
 - reads local files only
 - never executes submitted code
 - never opens a network connection
-- fails closed on credentials, non-approved destinations, or injection text
+- fails closed on credentials and unapproved destinations
 
 The scanner is intentionally dependency-free so it can run in a restricted,
 air-gapped environment. Optional external tools (gitleaks, semgrep) may be
 invoked by the orchestrator as an additional layer, but this module must
 remain self-contained.
+
+Context-aware severity
+----------------------
+The same string is a genuine risk in executable code but routine elsewhere.
+A test fixture is *expected* to contain fake credentials; a security document
+*describes* the patterns it detects; a JSON Schema `$schema` value is an
+identifier, not an egress attempt. Treating all of these as hard failures
+produces false positives that make the gate unusable.
+
+Severity is therefore decided by file context:
+
+| Context | Secrets | Unapproved URLs | Dangerous scripts |
+|---|---|---|---|
+| code / config | hard fail | hard fail | hard fail |
+| test fixture | review | review | review |
+| documentation | review | review | review |
+
+Declaration identifiers (`$schema`, `$id`, `$ref`, `xmlns`) and comment lines
+are never treated as egress. Placeholder-looking credentials are downgraded to
+review. Nothing is silently dropped: a downgraded finding still reaches the
+human review queue.
 """
 
 from __future__ import annotations
@@ -25,6 +46,68 @@ SEVERITY_HARD_FAIL = "hard_fail"
 SEVERITY_REVIEW = "review"
 
 MAX_FILE_BYTES = 1_000_000
+
+CONTEXT_CODE = "code"
+CONTEXT_CONFIG = "config"
+CONTEXT_TEST = "test"
+CONTEXT_DOC = "doc"
+CONTEXT_TEMPLATE = "template"
+
+# Contexts where a match represents executable risk.
+EXECUTABLE_CONTEXTS = {CONTEXT_CODE, CONTEXT_CONFIG}
+
+DOC_EXTENSIONS = {".md", ".rst", ".adoc", ".txt"}
+CONFIG_EXTENSIONS = {".json", ".jsonc", ".yaml", ".yml", ".toml", ".ini", ".cfg"}
+TEST_PATH_HINTS = (
+    "tests/",
+    "test/",
+    "spec/",
+    "__tests__/",
+    "test_",
+    "_test.",
+    ".test.",
+    ".spec.",
+)
+DOC_DIR_HINTS = ("docs/", "references/", "documentation/")
+# Templates exist to hold placeholder values, so a URL or credential-shaped
+# string inside one is an example rather than a live configuration.
+TEMPLATE_PATH_HINTS = (
+    "templates/",
+    "template",
+    ".example",
+    ".sample",
+    ".tmpl",
+    "fixtures/",
+)
+
+# Spec identifiers are declarations, not egress attempts.
+DECLARATION_PATTERNS: list[re.Pattern[str]] = [
+    re.compile(r'["\']?\$(schema|id|ref)["\']?\s*:', re.IGNORECASE),
+    re.compile(r"\bxmlns\b", re.IGNORECASE),
+]
+
+# Lines that are comments, so a URL on them is a reference rather than a call.
+COMMENT_LINE_PATTERNS: list[re.Pattern[str]] = [
+    re.compile(r"^\s*#"),
+    re.compile(r"^\s*//"),
+    re.compile(r"^\s*\*"),
+    re.compile(r"^\s*<!--"),
+    re.compile(r"^\s*;"),
+]
+
+# Words that mark a credential-shaped string as an obvious placeholder.
+PLACEHOLDER_MARKERS = (
+    "example",
+    "your_",
+    "your-",
+    "yourkey",
+    "changeme",
+    "placeholder",
+    "dummy",
+    "redacted",
+    "xxxx",
+    "todo",
+)
 
 SECRET_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("aws_access_key", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
@@ -58,7 +141,6 @@ DANGEROUS_SCRIPT_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
 
 URL_PATTERN = re.compile(r"https?://([A-Za-z0-9._\-]+)")
 EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+\-]+@([A-Za-z0-9.\-]+\.[A-Za-z]{2,})\b")
-INTERNAL_HOST_PATTERN = re.compile(r"(?i)\b[a-z0-9.\-]+\.(example|internal|corp|intra)\b")
 
 
 @dataclass
@@ -104,28 +186,96 @@ def _read_text(path: Path) -> str | None:
         return None
 
 
+def classify_context(rel_path: str) -> str:
+    """Decide how much weight a match in this file deserves.
+
+    Documentation and test fixtures legitimately contain credential-shaped
+    strings, pattern descriptions, and reference URLs. Treating those as hard
+    failures makes the gate unusable on any repository that documents security.
+    """
+    lowered = rel_path.lower().replace("\\", "/")
+    name = lowered.rsplit("/", 1)[-1]
+
+    if any(hint in lowered for hint in TEST_PATH_HINTS):
+        return CONTEXT_TEST
+
+    if any(hint in lowered for hint in TEMPLATE_PATH_HINTS):
+        return CONTEXT_TEMPLATE
+
+    suffix = ""
+    if "." in name:
+        suffix = "." + name.rsplit(".", 1)[-1]
+
+    if suffix in DOC_EXTENSIONS or any(hint in lowered for hint in DOC_DIR_HINTS):
+        return CONTEXT_DOC
+
+    if suffix in CONFIG_EXTENSIONS:
+        return CONTEXT_CONFIG
+
+    return CONTEXT_CODE
+
+
+def _is_declaration(line_text: str) -> bool:
+    """True for spec identifiers such as `$schema` or `xmlns`."""
+    return any(pattern.search(line_text) for pattern in DECLARATION_PATTERNS)
+
+
+def _is_comment_line(line_text: str) -> bool:
+    return any(pattern.search(line_text) for pattern in COMMENT_LINE_PATTERNS)
+
+
+def _looks_like_placeholder(line_text: str) -> bool:
+    lowered = line_text.lower()
+    return any(marker in lowered for marker in PLACEHOLDER_MARKERS)
+
+
+def _severity_for(context: str, kind: str, line_text: str) -> str:
+    """Resolve the effective severity for a match.
+
+    `kind` is one of `secret`, `network`, or `script`.
+    """
+    if context not in EXECUTABLE_CONTEXTS:
+        # Test fixtures and documentation are expected to contain examples.
+        return SEVERITY_REVIEW
+
+    if kind == "secret" and _looks_like_placeholder(line_text):
+        return SEVERITY_REVIEW
+
+    if kind == "network" and (_is_declaration(line_text) or _is_comment_line(line_text)):
+        return SEVERITY_REVIEW
+
+    return SEVERITY_HARD_FAIL
+
+
+def _line_bounds(text: str, start: int, end: int) -> tuple[int, int, int]:
+    line_no = text.count("\n", 0, start) + 1
+    line_start = text.rfind("\n", 0, start) + 1
+    line_end = text.find("\n", end)
+    if line_end == -1:
+        line_end = len(text)
+    return line_no, line_start, line_end
+
+
 def _scan_patterns(
     text: str,
     rel_path: str,
+    context: str,
     patterns: list[tuple[str, re.Pattern[str]]],
-    severity: str,
     category_prefix: str,
+    kind: str,
 ) -> list[Finding]:
     findings: list[Finding] = []
     for label, pattern in patterns:
         for match in pattern.finditer(text):
-            line_no = text.count("\n", 0, match.start()) + 1
-            line_start = text.rfind("\n", 0, match.start()) + 1
-            line_end = text.find("\n", match.end())
-            if line_end == -1:
-                line_end = len(text)
+            line_no, line_start, line_end = _line_bounds(text, match.start(), match.end())
+            line_text = text[line_start:line_end]
             findings.append(
                 Finding(
-                    severity=severity,
+                    severity=_severity_for(context, kind, line_text),
                     category=f"{category_prefix}:{label}",
                     file_path=rel_path,
                     line=line_no,
-                    line_text=text[line_start:line_end],
+                    line_text=line_text,
                 )
             )
     return findings
@@ -146,55 +296,59 @@ def scan_repository(root: str | Path, allowlist: NetworkAllowlist) -> ScanResult
             continue
 
         rel_path = str(file_path.relative_to(root_path))
+        context = classify_context(rel_path)
 
         findings.extend(
-            _scan_patterns(text, rel_path, SECRET_PATTERNS, SEVERITY_HARD_FAIL, "secret")
+            _scan_patterns(text, rel_path, context, SECRET_PATTERNS, "secret", "secret")
         )
         findings.extend(
-            _scan_patterns(text, rel_path, INJECTION_PATTERNS, SEVERITY_REVIEW, "injection")
+            _scan_patterns(text, rel_path, context, INJECTION_PATTERNS, "injection", "injection")
         )
         findings.extend(
             _scan_patterns(
-                text, rel_path, DANGEROUS_SCRIPT_PATTERNS, SEVERITY_HARD_FAIL, "script"
+                text, rel_path, context, DANGEROUS_SCRIPT_PATTERNS, "script", "script"
             )
         )
 
         for match in URL_PATTERN.finditer(text):
             host = match.group(1).lower()
-            if not allowlist.check_host(host).allowed:
+            if allowlist.check_host(host).allowed:
+                continue
+
+            line_no, line_start, line_end = _line_bounds(text, match.start(), match.end())
+            line_text = text[line_start:line_end]
+            severity = _severity_for(context, "network", line_text)
+
+            # Only a genuine, executable egress attempt counts as an external
+            # host of concern; a documented reference URL does not.
+            if severity == SEVERITY_HARD_FAIL:
                 external_hosts.add(host)
-                line_no = text.count("\n", 0, match.start()) + 1
-                line_start = text.rfind("\n", 0, match.start()) + 1
-                line_end = text.find("\n", match.end())
-                if line_end == -1:
-                    line_end = len(text)
-                findings.append(
-                    Finding(
-                        severity=SEVERITY_HARD_FAIL,
-                        category=f"network:external_host:{host}",
-                        file_path=rel_path,
-                        line=line_no,
-                        line_text=text[line_start:line_end],
-                    )
+
+            findings.append(
+                Finding(
+                    severity=severity,
+                    category=f"network:external_host:{host}",
+                    file_path=rel_path,
+                    line=line_no,
+                    line_text=line_text,
                 )
+            )
 
         for match in EMAIL_PATTERN.finditer(text):
             domain = match.group(1).lower()
-            if not allowlist.check_host(domain).allowed:
-                line_no = text.count("\n", 0, match.start()) + 1
-                line_start = text.rfind("\n", 0, match.start()) + 1
-                line_end = text.find("\n", match.end())
-                if line_end == -1:
-                    line_end = len(text)
-                findings.append(
-                    Finding(
-                        severity=SEVERITY_REVIEW,
-                        category="pii:external_email",
-                        file_path=rel_path,
-                        line=line_no,
-                        line_text=text[line_start:line_end],
-                    )
+            if allowlist.check_host(domain).allowed:
+                continue
+
+            line_no, line_start, line_end = _line_bounds(text, match.start(), match.end())
+            findings.append(
+                Finding(
+                    severity=SEVERITY_REVIEW,
+                    category="pii:external_email",
+                    file_path=rel_path,
+                    line=line_no,
+                    line_text=text[line_start:line_end],
                 )
+            )
 
     hard_fail_findings = [f for f in findings if f.severity == SEVERITY_HARD_FAIL]
 
