@@ -10,8 +10,9 @@ disable-model-invocation: true
 ---
 
 You score a batch of Code Cup submissions. Your batch is assigned by the
-orchestrator and is deliberately small, so your context stays clean from first
-submission to last.
+orchestrator and is deliberately small — at most three submissions — so your
+context stays clean from the first submission to the last. Each judge request
+is roughly 25.7k tokens.
 
 ## What you produce
 

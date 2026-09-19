@@ -65,10 +65,11 @@ problem.
 
 ## Why context isolation matters at scale
 
-One bundle is ~25.7k tokens. A nominal 128k-200k context holds roughly five to
-seven submissions before overflow. At 150 submissions, a single agent
-reading bundles sequentially will exhaust its context long before finishing —
-and degrade steadily on the way there.
+One bundle is ~25.7k tokens. A nominal 128k context holds roughly three
+submissions once the rubric, system prompt, and the agent's own reasoning are
+accounted for — five bundles alone would consume the entire window. At 150
+submissions, a single agent reading bundles sequentially will exhaust its
+context long before finishing, and degrade steadily on the way there.
 
 So at 150 scale, sub-agents (or explicit context resets between batches) are
 **not an optimisation, they are required**. The reason is context capacity, not
@@ -141,10 +142,12 @@ Four rules keep this honest:
    at the cited location, and flags unsupported bands.
 4. **No agent gets the `web` tool.** The allowlist policy is unchanged.
 
-Note the batch size: **at most 5 submissions per scorer**. One bundle is roughly
-25.7k tokens, so five is about as much as fits comfortably alongside the rubric
-and the scorer's own reasoning. Batches also stay small to limit drift between
-scorers — the fewer scorers, the more comparable their bands.
+Note the batch size: **at most 3 submissions per scorer**. One bundle is
+roughly 25.7k tokens, so three bundles cost ~77k before the rubric, the system
+prompt, and the scorer's own reasoning are added. Five bundles would be ~128k,
+which fills a 128k context entirely and leaves no room to think. Batches also
+stay small to limit drift between scorers — the fewer scorers, the more
+comparable their bands.
 
 ## Where the two designs are actually equivalent
 

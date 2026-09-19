@@ -55,11 +55,15 @@ never the request files themselves.
 ### Step 2 — partition
 
 Read `execution-state.json` and list the submissions whose state is
-`awaiting-judge`. Split them into batches of **at most 5 submissions per
+`awaiting-judge`. Split them into batches of **at most 3 submissions per
 scorer**.
 
-Keep the batch count small. Two or three scorers is the target; more scorers
-means more drift between them, which directly harms score comparability. Do not
+One judge bundle is roughly 25.7k tokens, so three bundles already cost ~77k
+before the rubric, prompt, and the scorer's own reasoning. Five would fill a
+128k context completely. Keep batches small.
+
+Keep the scorer count small too. Two or three is the target; more scorers means
+more drift between them, which directly harms score comparability. Do not
 create one scorer per submission.
 
 ### Step 3 — dispatch
@@ -105,6 +109,7 @@ gate, submissions routed to human review, and where the reports were written.
 | a submission fails verification twice | route to human review, do not accept the score |
 | a scorer returns prose instead of JSON | re-dispatch; do not parse it yourself |
 | a scorer exceeds its batch | drop the extra entries and re-dispatch the remainder |
+| a scorer's context is visibly strained | split the remainder into smaller batches on the next dispatch |
 
 ## What you must not do
 

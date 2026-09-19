@@ -299,9 +299,7 @@ Entities with low confidence and a high rank must be routed to a human review qu
 
 ### Concurrency limit should be driven by the host, not by raw CPU
 
-Do not scale by launching 150 independent agent processes. Instead:
-
-- static scan and ingestion can use a bounded worker pool
+Do not scale by launching 150 independent agent processes. Instead:- static scan and ingestion can use a bounded worker pool
 - LLM evaluation uses a rate-limited queue
 - concurrency is set from endpoint quotas such as RPM / TPM, not from raw machine capacity
 
@@ -314,6 +312,19 @@ A practical starting point is around 8–16 parallel LLM workers for a 150-submi
 - exponential backoff and jittered retry
 - dead-letter queue for permanent failures
 - provenance metadata appended to each result: repo identifier, commit SHA, `scanned_at`, `model_id`, `model_version`, `prompt_version`, `rubric_version`, `orchestrator_version`, `tool_versions`
+
+### Skill + program, or main agent + sub-agents?
+
+Both, tiered by cohort size. A Skill packages *what to do*; sub-agents distribute *where the work runs*. They are not alternatives.
+
+Up to roughly 30 submissions the Skill + program design is right and sub-agents only add overhead. Beyond that, context capacity forces delegation: one judge bundle is about 25.7k tokens, so an agent runs out of room after a handful of submissions.
+
+Two measured cost facts shape the design:
+
+- Splitting scoring **by dimension** triples input cost, because each scorer reads the same bundle to judge its own dimension. Splitting **by submission** does not.
+- In VS Code `runSubagent` is blocking, so there is no fan-out speedup. A case for sub-agents built on parallelism does not hold in this host.
+
+Three agent definitions ship under `.agents/agents/`: `codecup-eval-orchestrator` (dispatches, never scores), `codecup-eval-scorer` (D3/D6/D7, at most three submissions), `codecup-eval-verifier` (adversarial evidence check, never scores). See `references/main-subagent-architecture.md`.
 
 ## Data and Output Contract
 
