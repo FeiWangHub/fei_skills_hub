@@ -52,29 +52,16 @@ Frontmatter follows the official skill spec. Only these top-level keys are permi
 
 ## What It Does
 
-This skill turns the Code Cup evaluation design document into an actionable internal playbook for building an AI-assisted judging pipeline for a large internal hackathon. It is designed for scenarios with around 150 teams and 300–400 participants, where submissions may include:
+An actionable playbook for building an AI-assisted judging pipeline for a large internal hackathon — the scale it targets is around 150 teams and 300–400 participants, with submissions that may be AI Agent Skills, Copilot/OpenCode agent definitions, source-code repositories, or a mix of all three.
 
-- AI Agent Skills
-- Copilot / OpenCode agent definition files
-- Source-code repositories
-- Mixed artifact types in the same competition
+The pipeline it describes classifies each submission by artifact type, runs security and compliance gates with no LLM involvement, applies a deterministic weighted rubric, uses a constrained judge only for the qualitative dimensions, aggregates into structured JSON, and renders static HTML reports.
 
-The skill guides the construction of a batch evaluation system that:
-
-- classifies each submission by artifact type
-- runs security and compliance gates with no LLM involvement
-- applies a deterministic, weighted rubric
-- uses a constrained LLM judge only for qualitative dimensions
-- aggregates results into structured JSON output
-- renders final scores into static HTML reports
-
-This skill is intended for enterprise/intranet use and prioritizes reproducibility, auditability, safe isolation, and cost control over agentic free-form planning.
+It is intended for enterprise/intranet use and prioritizes reproducibility, auditability, safe isolation, and cost control over agentic free-form planning.
 
 ### Use Cases
 
-- Designing the architecture for a bank or enterprise internal hackathon scoring system
+- Designing an architecture for a bank or enterprise internal hackathon scoring system
 - Evaluating AI Agent, Agent Skill, and repository submissions in bulk
-- Implementing a batch scoring system for 100+ submissions
 - Defining a rubric with evidence-based scoring and JSON output contracts
 - Building risk controls to prevent prompt injection, credential leakage, and model bias
 - Creating static leaderboard and per-team report pages without unsafe LLM-generated HTML
@@ -109,13 +96,13 @@ The LLM should act as a constrained judge, not as a mini-ecosystem.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `submission_manifest` | file | Yes | A frozen list of all repos, commit SHAs, team metadata, and artifact classification info |
-| `artifact_types` | enum list | Yes | Supported types such as `skill`, `copilot_agent`, `opencode_agent`, `source_project` |
-| `llm_endpoint` | internal config | Yes | Private/internal LLM endpoint only; no public internet AI API |
+| `submission_manifest` | file | Yes | Frozen list of repos, commit SHAs, team metadata, artifact classification |
+| `artifact_types` | enum list | Yes | `skill`, `copilot_agent`, `opencode_agent`, `source_project` |
+| `repo_snapshots` | directory | Yes | Local read-only checkouts, one folder per submission id |
 | `rubric_version` | string | Yes | Versioned scoring rubric; frozen and hashed |
-| `report_target` | string | Yes | Internal static host / GitHub Pages / enterprise HTML publishing target |
-| `dynamic_eval_enabled` | boolean | No | Whether to enable optional sandboxed execution pass for a small subset |
-| `artifact_type_override` | map | No | Manual override if classifier is uncertain |
+| `report_target` | path | Yes | Where the static HTML reports are written |
+| `llm_endpoint` | internal config | No | **Not needed** when running inside a host agent. Only for the optional headless transport. |
+| `artifact_type_override` | map | No | Manual override if the classifier is uncertain |
 
 ## Expected Outputs
 
@@ -299,11 +286,7 @@ Entities with low confidence and a high rank must be routed to a human review qu
 
 ### Concurrency limit should be driven by the host, not by raw CPU
 
-Do not scale by launching 150 independent agent processes. Instead:- static scan and ingestion can use a bounded worker pool
-- LLM evaluation uses a rate-limited queue
-- concurrency is set from endpoint quotas such as RPM / TPM, not from raw machine capacity
-
-A practical starting point is around 8–16 parallel LLM workers for a 150-submission run.
+Do not scale by launching 150 independent agent processes. The static scan and ingestion can use a bounded worker pool, but the judging stage is bounded by the host agent's context, not by CPU or by a remote endpoint's rate limits.
 
 ### Required queue behaviors
 
