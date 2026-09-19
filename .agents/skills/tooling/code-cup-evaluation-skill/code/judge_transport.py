@@ -64,6 +64,18 @@ def default_response_parser(payload: dict[str, Any]) -> str:
     return content
 
 
+def default_usage_parser(payload: dict[str, Any]) -> dict[str, object]:
+    """Extract the endpoint-reported token usage, if present.
+
+    Returns an empty dict when the endpoint does not report usage, so callers
+    can distinguish "no usage reported" from "zero tokens used".
+    """
+    usage = payload.get("usage")
+    if isinstance(usage, dict):
+        return usage
+    return {}
+
+
 class JudgeTransport:
     """Allowlist-enforced HTTP transport for judge calls."""
 
@@ -74,6 +86,7 @@ class JudgeTransport:
         api_key: str | None = None,
         request_builder: Callable[[str, TransportConfig], dict[str, Any]] | None = None,
         response_parser: Callable[[dict[str, Any]], str] | None = None,
+        usage_parser: Callable[[dict[str, Any]], dict[str, object]] | None = None,
         sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         self.config = config
@@ -81,7 +94,12 @@ class JudgeTransport:
         self.api_key = api_key
         self.build_request = request_builder or default_request_builder
         self.parse_response = response_parser or default_response_parser
+        self.parse_usage = usage_parser or default_usage_parser
         self._sleep = sleep
+        # Populated after each successful call so the caller can record real
+        # token usage without re-parsing the response.
+        self.last_usage: dict[str, object] = {}
+        self.call_count = 0
 
     def assert_allowed(self) -> None:
         decision = self.allowlist.check_url(self.config.endpoint_url)
@@ -92,7 +110,11 @@ class JudgeTransport:
             )
 
     def __call__(self, prompt: str) -> str:
-        """Send a single judge prompt, returning raw response text."""
+        """Send a single judge prompt, returning raw response text.
+
+        Side effect: `last_usage` is set to the endpoint-reported usage for the
+        most recent call, or `{}` if the endpoint did not report any.
+        """
         self.assert_allowed()
 
         body = json.dumps(self.build_request(prompt, self.config)).encode("utf-8")
@@ -112,6 +134,9 @@ class JudgeTransport:
             try:
                 with urllib.request.urlopen(request, timeout=self.config.timeout_seconds) as response:
                     payload = json.loads(response.read().decode("utf-8"))
+
+                self.last_usage = self.parse_usage(payload)
+                self.call_count += 1
                 return self.parse_response(payload)
             except urllib.error.HTTPError as exc:
                 last_error = exc

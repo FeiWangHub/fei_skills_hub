@@ -167,6 +167,8 @@ class ScanResult:
     hard_failed: bool
     issues: list[str] = field(default_factory=list)
     findings: list[dict[str, object]] = field(default_factory=list)
+    files_scanned: int = 0
+    bytes_read: int = 0
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -174,6 +176,8 @@ class ScanResult:
             "hard_failed": self.hard_failed,
             "issues": self.issues,
             "findings": self.findings,
+            "files_scanned": self.files_scanned,
+            "bytes_read": self.bytes_read,
         }
 
 
@@ -289,11 +293,16 @@ def scan_repository(root: str | Path, allowlist: NetworkAllowlist) -> ScanResult
 
     findings: list[Finding] = []
     external_hosts: set[str] = set()
+    files_scanned = 0
+    bytes_read = 0
 
     for file_path in iter_scannable_files(root_path):
         text = _read_text(file_path)
         if text is None:
             continue
+
+        files_scanned += 1
+        bytes_read += len(text.encode("utf-8", errors="ignore"))
 
         rel_path = str(file_path.relative_to(root_path))
         context = classify_context(rel_path)
@@ -368,4 +377,6 @@ def scan_repository(root: str | Path, allowlist: NetworkAllowlist) -> ScanResult
         hard_failed=bool(hard_fail_findings),
         issues=issues,
         findings=[f.as_dict() for f in findings],
+        files_scanned=files_scanned,
+        bytes_read=bytes_read,
     )

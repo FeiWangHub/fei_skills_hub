@@ -46,16 +46,6 @@ metadata:
 
 Frontmatter follows the official skill spec. Only these top-level keys are permitted — `name`, `description`, `license`, `allowed-tools`, `metadata`, `compatibility`. `version`, `author`, and similar fields must be nested under `metadata`, because a top-level `version` or `author` is rejected by the validator.
 
-| Field | Value |
-|---|---|
-| `name` | `code-cup-evaluation-skill` (kebab-case, ≤64 chars) |
-| `license` | MIT |
-| `metadata.version` | 0.1.0 |
-| `metadata.author` | Fei Engineering |
-| `metadata.status` | draft |
-| `metadata.maturity` | reference-implementation |
-| `metadata.testing` | `code/tests/`, standard library only |
-
 `compatibility` declares the runtime needs: Python 3.9+, optional `PyYAML` for YAML manifests, and a reachable internal LLM endpoint for the optional judge stage.
 
 `allowed-tools` is deliberately omitted. This skill ships Python modules that the user runs explicitly; it does not need to invoke tools on the user's behalf, so declaring tool permissions would over-ask.
@@ -363,6 +353,7 @@ A dependency-free reference implementation of the L0/L1 layer ships with this sk
 | `code/allowlist.py` | Default-deny network allowlist decisions |
 | `code/static_scanner.py` | Secret, injection, dangerous-script, and external-host scanning |
 | `code/deterministic_scorer.py` | Scores D1/D2/D4/D5 from repository facts with no LLM |
+| `code/metrics.py` | Per-stage timing and token accounting, with measured vs estimated clearly separated |
 | `code/judge_adapter.py` | Judge prompt assembly and strict JSON contract validation |
 | `code/judge_transport.py` | The only module allowed to open a connection; refuses non-allowlisted hosts |
 | `code/aggregator.py` | Weighted scoring, median reconciliation, confidence, ranking |
@@ -371,14 +362,15 @@ A dependency-free reference implementation of the L0/L1 layer ships with this sk
 | `code/tests/test_gates.py` | Standard-library tests for the gates |
 | `code/tests/test_pipeline.py` | Standard-library tests for aggregation, egress, and reports |
 | `code/tests/test_deterministic_scorer.py` | Standard-library tests for the deterministic dimensions |
+| `code/tests/test_metrics.py` | Standard-library tests for timing and token accounting |
 
 ### Running it
 
 ```bash
 cd code
-PYTHONPATH=. python3 tests/test_gates.py
-PYTHONPATH=. python3 tests/test_pipeline.py
-PYTHONPATH=. python3 tests/test_deterministic_scorer.py
+for t in test_gates test_pipeline test_deterministic_scorer test_metrics; do
+  PYTHONPATH=. python3 tests/$t.py
+done
 PYTHONPATH=. python3 orchestrator.py \
   --manifest ../templates/submission-manifest-template.yaml \
   --allowlist ../templates/allowlist.json \
@@ -387,7 +379,13 @@ PYTHONPATH=. python3 orchestrator.py \
   --rubric ../templates/score-rubric.yaml
 ```
 
-Output is written to `out/execution-state.json`, with HTML in `out/reports/` (`index.html` plus one page per submission). Pass `--no-report` to skip rendering.
+Output is written to `out/execution-state.json`, with HTML in `out/reports/` (`index.html` plus one page per submission, linked from the dashboard). Pass `--no-report` to skip rendering.
+
+### Cost and timing metrics
+
+Every run records what each stage cost, so two scoring configurations can be compared directly. `out/execution-state.json` carries a batch `cost` block plus a `metrics` block per submission, and each report page renders a "Cost and timing" table.
+
+Token figures are never conflated: `measured` means the endpoint's `usage` field reported it, `estimated` is a character heuristic for stages that call no model, and `none` means the stage ran without producing a figure. A run with `measured_tokens: 0` and `total_tokens > 0` means no model was called at all — the repository was processed entirely by the static and deterministic layers. The `judge` stage is absent from the metrics rather than recorded as zero when it does not run. See `references/cost-and-timing.md`.
 
 ### What the orchestrator computes without an LLM
 

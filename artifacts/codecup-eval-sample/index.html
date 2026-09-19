@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Code Cup — Evaluation Dashboard</title>
+<style>
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 2rem;
+  font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #0f1115; color: #e8eaed; line-height: 1.5;
+}
+h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.05rem; margin: 2rem 0 .75rem; color: #b8bcc4; font-weight: 600; }
+.sub { color: #8b909a; font-size: .85rem; margin-bottom: 2rem; }
+table { border-collapse: collapse; width: 100%; font-size: .875rem; }
+th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid #262a33; }
+th { color: #9aa0aa; font-weight: 600; font-size: .78rem;
+     text-transform: uppercase; letter-spacing: .04em; }
+tr:hover td { background: #161a21; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.badge { display: inline-block; padding: .1rem .5rem; border-radius: 999px;
+         font-size: .72rem; font-weight: 600; }
+.conf-high { background: #10331f; color: #57d98a; }
+.conf-medium { background: #3a3110; color: #e3c04a; }
+.conf-low { background: #3a1414; color: #e8706f; }
+.state { font-size: .75rem; padding: .1rem .5rem; border-radius: 4px;
+         background: #23262e; color: #c2c6cd; }
+.gate-fail { color: #e8706f; font-weight: 600; }
+.gate-pass { color: #57d98a; font-weight: 600; }
+.bar { height: 6px; background: #262a33; border-radius: 3px; overflow: hidden; min-width: 80px; }
+.bar > span { display: block; height: 100%; background: #4c8dff; }
+.card { background: #161a21; border: 1px solid #262a33; border-radius: 10px;
+        padding: 1.25rem; margin-bottom: 1.5rem; }
+.kv { display: grid; grid-template-columns: 180px 1fr; gap: .35rem 1rem; font-size: .85rem; }
+.kv dt { color: #8b909a; }
+.kv dd { margin: 0; }
+code { background: #23262e; padding: .1rem .35rem; border-radius: 4px;
+       font-size: .8rem; font-family: ui-monospace, SFMono-Regular, monospace; }
+a { color: #4c8dff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+ul.evidence { padding-left: 1.1rem; font-size: .82rem; color: #b8bcc4; }
+.review { background: #3a1414; border-color: #5a2020; }
+</style>
+</head>
+<body>
+
+<h1>Code Cup — Evaluation Dashboard</h1>
+<div class="sub">
+  3 submissions &nbsp;·&nbsp; 0 blocked by the static gate
+  &nbsp;·&nbsp; 3 flagged for human review &nbsp;·&nbsp; generated 2026-09-19T01:48:26.402462+00:00
+</div>
+<p class="sub">Select a team name to open its full report.</p>
+<table>
+  <thead>
+    <tr>
+      <th class="num">#</th><th>Team</th><th>Artifact</th>
+      <th class="num">Score</th><th>Confidence</th><th>Gate</th><th>State</th><th></th>
+    </tr>
+  </thead>
+  <tbody><tr><td class="num">—</td><td><a href="TEAM_001.html">Code Cup Evaluation Skill</a></td><td>skill</td><td class="num">0</td><td><span class="badge conf-low">low</span></td><td class="gate-pass">pass</td><td>awaiting-judge</td><td><a href="TEAM_001.html">details</a></td></tr><tr><td class="num">—</td><td><a href="TEAM_002.html">CodeCup Eval DeepSeek</a></td><td>skill</td><td class="num">0</td><td><span class="badge conf-low">low</span></td><td class="gate-pass">pass</td><td>awaiting-judge</td><td><a href="TEAM_002.html">details</a></td></tr><tr><td class="num">—</td><td><a href="TEAM_003.html">CodeCup Eval Sonnet5</a></td><td>skill</td><td class="num">0</td><td><span class="badge conf-low">low</span></td><td class="gate-pass">pass</td><td>awaiting-judge</td><td><a href="TEAM_003.html">details</a></td></tr></tbody>
+</table>
+
+</body>
+</html>

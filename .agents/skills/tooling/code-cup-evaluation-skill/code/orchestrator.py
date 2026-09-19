@@ -24,6 +24,12 @@ from allowlist import NetworkAllowlist
 from artifact_classifier import classify
 from deterministic_scorer import DETERMINISTIC_DIMENSIONS, score_deterministic
 from manifest_loader import load_manifest, normalize_submissions, validate_manifest
+from metrics import (
+    RunMetrics,
+    TokenUsage,
+    summarize,
+    timed_stage,
+)
 from static_scanner import scan_repository
 
 SCORE_KEYS = (
@@ -60,7 +66,12 @@ def evaluate_submission(
     Returns a record in one of the states: `failed`, `hard-failed`, or
     `awaiting-judge`. Dimensions that can be scored from repository facts are
     filled in here; the judge-only dimensions remain at 0 until the judge runs.
+
+    Each stage records its own elapsed time and token accounting under
+    `metrics`, so two scoring variants can be compared directly.
     """
+    metrics = RunMetrics()
+
     record: dict[str, object] = {
         "submission_id": submission.submission_id,
         "team_name": submission.team_name,
@@ -85,9 +96,12 @@ def evaluate_submission(
         record["human_review_required"] = True
         record["evidence"] = []
         record["provenance"] = _provenance()
+        record["metrics"] = metrics.as_dict()
         return record
 
-    detected_type, rationale = classify(repo_path)
+    with timed_stage(metrics, "classify"):
+        detected_type, rationale = classify(repo_path)
+
     record["classification"] = {
         "detected": detected_type,
         "declared": submission.artifact_type,
@@ -95,8 +109,20 @@ def evaluate_submission(
         "mismatch": detected_type != submission.artifact_type,
     }
 
-    scan_result = scan_repository(repo_path, allowlist)
+    with timed_stage(metrics, "static_scan"):
+        scan_result = scan_repository(repo_path, allowlist)
+
     record["static_gate"] = scan_result.as_dict()
+
+    # The scanner reads the whole repository, so the volume it processed is the
+    # meaningful cost signal for this stage. This is a character-based estimate
+    # tagged `estimated`: no model is called, so it is not provider usage.
+    #
+    # For comparison, this is the same volume a naive "send the repo to the LLM"
+    # approach would have to pay for.
+    metrics.stages[-1].tokens = TokenUsage.estimated_from_text(
+        "x" * int(scan_result.bytes_read)
+    )
 
     if not scan_result.passed:
         record["state"] = "hard-failed"
@@ -105,11 +131,13 @@ def evaluate_submission(
         record["human_review_required"] = False
         record["evidence"] = []
         record["provenance"] = _provenance()
+        record["metrics"] = metrics.as_dict()
         return record
 
     # Static gate passed. Score every dimension that does not require judgement,
     # so the deterministic share of the rubric is computed without any LLM call.
-    scored = score_deterministic(repo_path, submission.artifact_type, scan_result.findings)
+    with timed_stage(metrics, "deterministic_scoring"):
+        scored = score_deterministic(repo_path, submission.artifact_type, scan_result.findings)
 
     scores: dict[str, object] = dict(scored.scores)
     for key in SCORE_KEYS:
@@ -121,6 +149,11 @@ def evaluate_submission(
     record["deterministic_rationales"] = scored.rationales
     record["judge_dimensions_pending"] = list(scored.judge_dimensions)
     record["evidence"] = scored.evidence
+
+    # No model has been called at this point. The judge stage is deliberately
+    # absent from `metrics.stages` rather than recorded as a zero-duration
+    # stage, because it did not run. A caller that runs the judge appends its
+    # own stage with real elapsed time and provider-reported usage.
 
     # Pre-judge confidence cannot be `high`: judge agreement has not been
     # demonstrated yet, and a single unverified pass is never enough. Suspicious
@@ -136,6 +169,7 @@ def evaluate_submission(
     # for prompt-injection and PII findings.
     record["human_review_required"] = bool(review_findings) or record["confidence"] == "low"
     record["provenance"] = _provenance()
+    record["metrics"] = metrics.as_dict()
     return record
 
 
@@ -165,7 +199,11 @@ def run_pipeline(manifest_path: str, allowlist_path: str, repo_root: str, out_di
         "deterministic_dimensions": list(DETERMINISTIC_DIMENSIONS),
     }
 
-    bundle = {"state": state, "results": results}
+    bundle = {
+        "state": state,
+        "cost": summarize([r.get("metrics", {}) for r in results]),
+        "results": results,
+    }
 
     (output_root / "execution-state.json").write_text(
         json.dumps(bundle, indent=2, ensure_ascii=False), encoding="utf-8"

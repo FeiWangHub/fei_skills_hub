@@ -144,6 +144,22 @@ def render_submission_report(record: dict[str, object]) -> str:
             f"{_escape(reason)}</div>"
         )
 
+    metrics = record.get("metrics") or {}
+    stage_rows = "".join(
+        "<tr>"
+        f"<td>{_escape(stage.get('name'))}</td>"
+        f'<td class="num">{_escape(stage.get("elapsed_s"))}s</td>'
+        f'<td class="num">{_escape((stage.get("tokens") or {}).get("total_tokens", 0))}</td>'
+        f"<td>{_escape((stage.get('tokens') or {}).get('source'))}</td>"
+        "</tr>"
+        for stage in (metrics.get("stages") or [])
+        if isinstance(stage, dict)
+    ) or '<tr><td colspan="4">No stages recorded.</td></tr>'
+
+    totals = metrics.get("total_tokens") or {}
+    total_tokens = totals.get("total_tokens", 0)
+    token_source = totals.get("source", "none")
+
     body = f"""
 <h1>{_escape(record.get('team_name'))}</h1>
 <div class="sub">
@@ -166,6 +182,17 @@ def render_submission_report(record: dict[str, object]) -> str:
   <thead><tr><th>Dimension</th><th class="num">Band</th><th>Scale</th></tr></thead>
   <tbody>{''.join(rows)}</tbody>
 </table>
+<h2>Cost and timing</h2>
+<table>
+  <thead><tr><th>Stage</th><th class="num">Elapsed</th><th class="num">Tokens</th><th>Source</th></tr></thead>
+  <tbody>{stage_rows}</tbody>
+</table>
+<p class="sub">
+  Total {_escape(metrics.get('total_elapsed_s', 0))}s &nbsp;·&nbsp;
+  {_escape(total_tokens)} tokens (<code>{_escape(token_source)}</code>) &nbsp;·&nbsp;
+  <code>measured</code> means the endpoint reported it;
+  <code>estimated</code> is a character heuristic for stages that call no model.
+</p>
 <h2>Static gate findings</h2>
 <table>
   <thead><tr><th>Severity</th><th>Category</th><th>File</th><th class="num">Line</th></tr></thead>
