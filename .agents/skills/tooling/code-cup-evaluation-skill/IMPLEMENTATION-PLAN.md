@@ -261,6 +261,7 @@ Repository-level:
 | `code/artifact_classifier.py` | shipped — deterministic classification |
 | `code/allowlist.py` | shipped — allowlist decisions |
 | `code/static_scanner.py` | shipped — secret / injection / host scanning |
+| `code/deterministic_scorer.py` | shipped — D1/D2/D4/D5 scored from repository facts, no LLM |
 | `code/judge_adapter.py` | shipped — judge prompt + JSON contract validation |
 | `code/judge_transport.py` | shipped — allowlist-enforced HTTP transport, the only egress point |
 | `code/aggregator.py` | shipped — weighted scoring + median reconciliation + ranking |
@@ -268,6 +269,7 @@ Repository-level:
 | `code/orchestrator.py` | shipped — pipeline entry point |
 | `code/tests/test_gates.py` | shipped — stdlib test suite |
 | `code/tests/test_pipeline.py` | shipped — stdlib test suite |
+| `code/tests/test_deterministic_scorer.py` | shipped — stdlib test suite |
 | `code/README.md` | shipped — usage notes |
 
 ### 7.2 Not yet implemented
@@ -283,8 +285,10 @@ Repository-level:
 The shipped `code/` layer was executed locally against purpose-built fixtures. Observed results:
 
 - a repo containing an AWS key and a call to `api.someexternalvendor.com` was marked `hard-failed` with 2 hard-fail findings and did not reach the judge stage
-- a clean repo referencing only `llm.internal.example` passed the gate with zero findings and was queued as `awaiting-judge` at `high` confidence
-- a repo containing prompt-injection text passed the hard gate but was downgraded to `medium` confidence and routed to review
+- a clean repo referencing only `llm.internal.example` passed the gate with zero findings and was queued as `awaiting-judge`
+- a repo containing prompt-injection text passed the hard gate but was downgraded and routed to review
+- deterministic scoring separates quality: a complete clean skill scored 5/5/5/5 on D1/D2/D4/D5, while a bare source project with no docs and no tests scored 5/3/1/1 on the same dimensions
+- every deterministic score carries evidence and a rationale (9 evidence items vs 4 for the two fixtures)
 - allowlist decisions correctly permitted `.example` hosts and denied `github.com`, `pypi.org`, and `api.evil.com`
 - `JudgeTransport` raised `EgressBlockedError` for both a non-approved host and an explicit blocklist entry, and permitted an approved internal endpoint
 - the judge contract rejected responses with a positive score and no evidence, an out-of-band score of 100, markdown-fenced JSON, and non-JSON text
@@ -294,20 +298,25 @@ The shipped `code/` layer was executed locally against purpose-built fixtures. O
 - an unpinned submission (missing `commit_sha`) was rejected at manifest validation with a named error
 - a YAML manifest without `PyYAML` failed with an explicit remediation message rather than silently proceeding
 
-### 7.4 Defect found and fixed during verification
+### 7.4 Defects found and fixed during verification
 
-The first end-to-end run exposed a real logic error. A submission that had been `hard-failed` by the static gate carried `total: 0` and `confidence: low`, and the top-slice review rule then flagged it as "low confidence within the top-ranked slice". A blocked submission was therefore being presented as a ranked entry awaiting manual review.
+**Defect 1 — blocked submissions were ranked as review candidates.** A submission `hard-failed` by the static gate carried `total: 0` and `confidence: low`, and the top-slice review rule then flagged it as "low confidence within the top-ranked slice", presenting a blocked submission as a ranked entry awaiting manual review. Fix: ranking now partitions records into scored and non-scored; hard-failed and failed submissions receive no rank and are never subject to the top-slice rule. Regression test: `test_ranking_excludes_non_scored_submissions`.
 
-Fix: ranking now partitions records into scored and non-scored. Hard-failed and failed submissions receive no rank and are never subject to the top-slice rule. A regression test (`test_ranking_excludes_non_scored_submissions`) locks the behavior in.
+**Defect 2 — the deterministic-first design was not implemented.** The orchestrator set all seven dimensions to `0` and deferred everything to the judge, contradicting the core design stance that roughly 70% of the score needs no LLM. Fix: added `deterministic_scorer.py`, which scores D1/D2/D4/D5 from repository facts, leaving only D3/D6/D7 to the judge.
+
+**Defect 3 — dead and duplicated code in the orchestrator.** `aggregate()`, `DEFAULT_WEIGHTS`, and the `asdict` import were unused, and `compute_confidence()` duplicated `aggregator.derive_confidence()` with different semantics. Fix: removed the dead code and unified on the aggregator's confidence function.
+
+**Defect 4 — pre-judge confidence semantics.** Calling `derive_confidence(0, 0, n)` before any judge pass always returned `medium`, and review-severity findings no longer forced escalation. Fix: pre-judge confidence is now explicitly capped at `medium`, and any review-severity finding sets `human_review_required` independently of the confidence label.
 
 ### 7.5 Known limitations
 
-- the judge stage is not invoked by `orchestrator.py`; it requires a live internal endpoint and credentials. Passing records stay in `awaiting-judge` rather than being assigned a fabricated score.
+- the judge stage is not invoked by `orchestrator.py`; it requires a live internal endpoint and credentials. D3/D6/D7 stay at `0` with the record in `awaiting-judge` rather than being assigned a fabricated score.
 - the static scanner is regex-based and self-contained by design; `gitleaks` / `semgrep` should be layered on top as a second pass for higher recall
 - `postinstall` and CI detection is pattern-based and will not catch obfuscated scripts
 - reports are rendered by `report_generator.py`; there is no external HTML template override yet
 - no deduplication or cross-team similarity layer is implemented
 - concurrency and the rate-limited worker pool described in §4 are not implemented; the pipeline currently runs sequentially
+- deterministic heuristics for D4/D5 use file counts and byte sizes as proxies, which a submission could in principle game by adding empty files
 
 ## 8. Completion Criteria
 

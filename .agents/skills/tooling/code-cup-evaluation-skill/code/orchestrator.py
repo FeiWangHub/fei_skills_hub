@@ -2,7 +2,8 @@
 
 Design stance:
 - the orchestrator owns flow control, state, and scoring arithmetic
-- the LLM judge only scores the qualitative dimensions of an evidence bundle
+- dimensions that can be judged from repository facts are scored with no LLM
+- the LLM judge scores only the qualitative remainder
 - network egress is restricted to the allowlist before any request is made
 
 Usage:
@@ -15,13 +16,13 @@ from __future__ import annotations
 
 import argparse
 import json
-from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 
 from aggregator import rank_results
 from allowlist import NetworkAllowlist
 from artifact_classifier import classify
+from deterministic_scorer import DETERMINISTIC_DIMENSIONS, score_deterministic
 from manifest_loader import load_manifest, normalize_submissions, validate_manifest
 from static_scanner import scan_repository
 
@@ -35,36 +36,31 @@ SCORE_KEYS = (
     "d7_innovation",
 )
 
-DEFAULT_WEIGHTS = {
-    "skill": 0.15,
-    "copilot_agent": 0.15,
-    "opencode_agent": 0.15,
-    "source_project": 0.15,
-}
+
+def _empty_scores() -> dict[str, int]:
+    return {**{key: 0 for key in SCORE_KEYS}, "total": 0}
 
 
-def aggregate(total_weighted: float) -> float:
-    """Normalize a weighted sum into an anchored 0-100 scale."""
-    return round(total_weighted, 2)
-
-
-def compute_confidence(static_passed: bool, review_issue_count: int) -> str:
-    """Derive a coarse confidence label from deterministic signals only."""
-    if not static_passed:
-        return "low"
-    if review_issue_count == 0:
-        return "high"
-    if review_issue_count <= 2:
-        return "medium"
-    return "low"
+def _provenance(model_version: str = "not-run") -> dict[str, str]:
+    return {
+        "rubric_version": "unversioned",
+        "prompt_version": "unversioned",
+        "model_version": model_version,
+        "scanned_at": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 def evaluate_submission(
     submission,
     repo_root: Path,
     allowlist: NetworkAllowlist,
-    output_root: Path,
 ) -> dict[str, object]:
+    """Run the deterministic stages for one submission.
+
+    Returns a record in one of the states: `failed`, `hard-failed`, or
+    `awaiting-judge`. Dimensions that can be scored from repository facts are
+    filled in here; the judge-only dimensions remain at 0 until the judge runs.
+    """
     record: dict[str, object] = {
         "submission_id": submission.submission_id,
         "team_name": submission.team_name,
@@ -82,17 +78,13 @@ def evaluate_submission(
             "passed": False,
             "hard_failed": True,
             "issues": ["repository snapshot missing"],
+            "findings": [],
         }
-        record["scores"] = {**{key: 0 for key in SCORE_KEYS}, "total": 0}
+        record["scores"] = _empty_scores()
         record["confidence"] = "low"
         record["human_review_required"] = True
         record["evidence"] = []
-        record["provenance"] = {
-            "rubric_version": "unversioned",
-            "prompt_version": "unversioned",
-            "model_version": "not-run",
-            "scanned_at": datetime.now(timezone.utc).isoformat(),
-        }
+        record["provenance"] = _provenance()
         return record
 
     detected_type, rationale = classify(repo_path)
@@ -108,33 +100,42 @@ def evaluate_submission(
 
     if not scan_result.passed:
         record["state"] = "hard-failed"
-        record["scores"] = {**{key: 0 for key in SCORE_KEYS}, "total": 0}
+        record["scores"] = _empty_scores()
         record["confidence"] = "low"
         record["human_review_required"] = False
         record["evidence"] = []
-        record["provenance"] = {
-            "rubric_version": "unversioned",
-            "prompt_version": "unversioned",
-            "model_version": "not-run",
-            "scanned_at": datetime.now(timezone.utc).isoformat(),
-        }
+        record["provenance"] = _provenance()
         return record
 
-    # Static gate passed. Qualitative scoring is deferred to the judge stage,
-    # which must run through the allowlist-enforced internal transport.
+    # Static gate passed. Score every dimension that does not require judgement,
+    # so the deterministic share of the rubric is computed without any LLM call.
+    scored = score_deterministic(repo_path, submission.artifact_type, scan_result.findings)
+
+    scores: dict[str, object] = dict(scored.scores)
+    for key in SCORE_KEYS:
+        scores.setdefault(key, 0)
+    scores["total"] = 0
+
     record["state"] = "awaiting-judge"
-    record["scores"] = {**{key: 0 for key in SCORE_KEYS}, "total": 0}
-    record["confidence"] = compute_confidence(
-        scan_result.passed, len(scan_result.findings)
-    )
-    record["human_review_required"] = record["confidence"] == "low"
-    record["evidence"] = []
-    record["provenance"] = {
-        "rubric_version": "unversioned",
-        "prompt_version": "unversioned",
-        "model_version": "not-run",
-        "scanned_at": datetime.now(timezone.utc).isoformat(),
-    }
+    record["scores"] = scores
+    record["deterministic_rationales"] = scored.rationales
+    record["judge_dimensions_pending"] = list(scored.judge_dimensions)
+    record["evidence"] = scored.evidence
+
+    # Pre-judge confidence cannot be `high`: judge agreement has not been
+    # demonstrated yet, and a single unverified pass is never enough. Suspicious
+    # static findings downgrade it further.
+    review_findings = [f for f in scan_result.findings if f.get("severity") == "review"]
+    if len(review_findings) > 2:
+        record["confidence"] = "low"
+    else:
+        record["confidence"] = "medium"
+
+    # Any review-severity finding requires a human look, independently of the
+    # confidence label. This is the escalation path the scan checklist defines
+    # for prompt-injection and PII findings.
+    record["human_review_required"] = bool(review_findings) or record["confidence"] == "low"
+    record["provenance"] = _provenance()
     return record
 
 
@@ -152,8 +153,7 @@ def run_pipeline(manifest_path: str, allowlist_path: str, repo_root: str, out_di
     output_root.mkdir(parents=True, exist_ok=True)
 
     results = [
-        evaluate_submission(s, repo_root_path, allowlist, output_root)
-        for s in submissions
+        evaluate_submission(s, repo_root_path, allowlist) for s in submissions
     ]
 
     state = {
@@ -162,6 +162,7 @@ def run_pipeline(manifest_path: str, allowlist_path: str, repo_root: str, out_di
         "hard_failed": sum(1 for r in results if r.get("state") == "hard-failed"),
         "awaiting_judge": sum(1 for r in results if r.get("state") == "awaiting-judge"),
         "failed": sum(1 for r in results if r.get("state") == "failed"),
+        "deterministic_dimensions": list(DETERMINISTIC_DIMENSIONS),
     }
 
     bundle = {"state": state, "results": results}
@@ -170,6 +171,7 @@ def run_pipeline(manifest_path: str, allowlist_path: str, repo_root: str, out_di
         json.dumps(bundle, indent=2, ensure_ascii=False), encoding="utf-8"
     )
     return bundle
+
 
 
 def run_full_pipeline(

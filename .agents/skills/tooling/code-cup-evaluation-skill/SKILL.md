@@ -362,6 +362,7 @@ A dependency-free reference implementation of the L0/L1 layer ships with this sk
 | `code/artifact_classifier.py` | Deterministic artifact-type classification |
 | `code/allowlist.py` | Default-deny network allowlist decisions |
 | `code/static_scanner.py` | Secret, injection, dangerous-script, and external-host scanning |
+| `code/deterministic_scorer.py` | Scores D1/D2/D4/D5 from repository facts with no LLM |
 | `code/judge_adapter.py` | Judge prompt assembly and strict JSON contract validation |
 | `code/judge_transport.py` | The only module allowed to open a connection; refuses non-allowlisted hosts |
 | `code/aggregator.py` | Weighted scoring, median reconciliation, confidence, ranking |
@@ -369,6 +370,7 @@ A dependency-free reference implementation of the L0/L1 layer ships with this sk
 | `code/orchestrator.py` | Pipeline entry point and aggregate state output |
 | `code/tests/test_gates.py` | Standard-library tests for the gates |
 | `code/tests/test_pipeline.py` | Standard-library tests for aggregation, egress, and reports |
+| `code/tests/test_deterministic_scorer.py` | Standard-library tests for the deterministic dimensions |
 
 ### Running it
 
@@ -376,6 +378,7 @@ A dependency-free reference implementation of the L0/L1 layer ships with this sk
 cd code
 PYTHONPATH=. python3 tests/test_gates.py
 PYTHONPATH=. python3 tests/test_pipeline.py
+PYTHONPATH=. python3 tests/test_deterministic_scorer.py
 PYTHONPATH=. python3 orchestrator.py \
   --manifest ../templates/submission-manifest-template.yaml \
   --allowlist ../templates/allowlist.json \
@@ -385,6 +388,14 @@ PYTHONPATH=. python3 orchestrator.py \
 ```
 
 Output is written to `out/execution-state.json`, with HTML in `out/reports/` (`index.html` plus one page per submission). Pass `--no-report` to skip rendering.
+
+### What the orchestrator computes without an LLM
+
+Four of the seven dimensions are scored from repository facts before the judge is ever called: D1 security (from gate findings), D2 structure (from artifact markers), D4 documentation, and D5 testing. Only D3, D6, and D7 — the genuine judgement calls — go to the judge, and they stay at `0` with the record in `awaiting-judge` until a judge pass runs.
+
+Deterministic scores carry evidence and a rationale, so the merged result satisfies the same evidence contract the judge must meet. Pre-judge confidence is capped at `medium` because judge agreement has not been demonstrated yet; any review-severity finding (prompt injection, PII) forces `human_review_required` regardless of the confidence label.
+
+Per-dimension thresholds and the known weaknesses of these heuristics are documented in `references/deterministic-scoring.md`.
 
 ### Wiring in the judge stage
 
@@ -445,14 +456,7 @@ Add a deduplication layer using minhash or embedding similarity checks, because 
 
 ### UAT access
 
-Do not allow the LLM to browse UAT or internal systems directly. Use orchestrator-driven checks instead:
-
-- HTTP status
-- TLS validity
-- latency / response time
-- screenshot
-- console error detection
-- dead-link verification
+Do not allow the LLM to browse UAT or internal systems directly. Use orchestrator-driven checks instead: HTTP status, TLS validity, latency, a headless screenshot, console error detection, and dead-link verification. The screenshot can then be handed to a multimodal reviewer as an artefact.
 
 ## Practical Implementation Guidance
 
