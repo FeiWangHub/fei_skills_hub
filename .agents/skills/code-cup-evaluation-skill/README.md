@@ -88,7 +88,7 @@ Agent definitions for the delegated tier live at the repository root:
 
 ```bash
 cd code
-for t in test_gates test_pipeline test_deterministic_scorer test_metrics test_judge_io; do
+for t in test_gates test_pipeline test_deterministic_scorer test_metrics test_judge_io test_efficiency; do
   PYTHONPATH=. python3 tests/$t.py
 done
 

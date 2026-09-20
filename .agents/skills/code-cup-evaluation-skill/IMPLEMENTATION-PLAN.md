@@ -270,6 +270,10 @@ Repository-level:
 | `code/tests/test_gates.py` | shipped — stdlib test suite |
 | `code/tests/test_pipeline.py` | shipped — stdlib test suite |
 | `code/tests/test_deterministic_scorer.py` | shipped — stdlib test suite |
+| `code/efficiency.py` | shipped — read-only cost/time/efficiency report |
+| `code/tests/test_metrics.py` | shipped — stdlib test suite |
+| `code/tests/test_judge_io.py` | shipped — stdlib test suite |
+| `code/tests/test_efficiency.py` | shipped — stdlib test suite |
 | `code/README.md` | shipped — usage notes |
 
 ### 7.2 Not yet implemented

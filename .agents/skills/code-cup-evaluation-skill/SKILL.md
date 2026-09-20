@@ -8,7 +8,7 @@ metadata:
   author: Fei Engineering
   organization: Fei Engineering
   date: September 2026
-  last_updated: "2026-09-19"
+  last_updated: "2026-09-20"
   status: draft
   domain: tooling / ai
   maturity: reference-implementation
@@ -331,15 +331,16 @@ A dependency-free Python implementation ships with this skill. It performs no ne
 | `code/deterministic_scorer.py` | Scores D1/D2/D4/D5 from repository facts, no LLM |
 | `code/aggregator.py` | Weighted scoring, partial totals, confidence, ranking |
 | `code/metrics.py` | Per-stage timing and token accounting |
+| `code/efficiency.py` | Read-only cost/time/efficiency report for a finished run |
 | `code/report_generator.py` | Deterministic, escaped, CDN-free HTML reports |
 | `code/judge_transport.py` | Optional headless transport (not the primary path) |
-| `code/tests/` | Five standard-library test suites |
+| `code/tests/` | Six standard-library test suites |
 
 Run the suites with:
 
 ```bash
 cd code
-for t in test_gates test_pipeline test_deterministic_scorer test_metrics test_judge_io; do
+for t in test_gates test_pipeline test_deterministic_scorer test_metrics test_judge_io test_efficiency; do
   PYTHONPATH=. python3 tests/$t.py
 done
 ```
@@ -397,6 +398,29 @@ Token figures are never conflated: `measured` was reported by the model, `estima
 The host-agent judging phase is timed by deriving it from the `prepare` and `merge` timestamps and is labelled as derived. Its token usage is estimated from the judge request and response sizes on disk when the agent does not report usage, so every report carries a cost figure for the judging pass — clearly marked `estimated` rather than presented as provider billing.
 
 Counts and durations are formatted for reading: thousands grouped (`36,866`), sub-second durations in milliseconds (`31.0ms`), longer ones in seconds or minutes.
+
+### Retrospective efficiency report
+
+`prepare` and `merge` record cost as the run happens. To report it afterwards —
+or to compare two runs — use the read-only `efficiency` command:
+
+```bash
+PYTHONPATH=. python3 orchestrator.py efficiency --out ./out --mode skill --write
+
+# compare a Skill-mode run with an Agent-mode run over the same cohort
+PYTHONPATH=. python3 orchestrator.py efficiency --out <agent-run> --compare <skill-run>
+```
+
+It reports wall-clock split by program vs agent, tokens split by stage, the
+deterministic share of the work, the dispatch shape, quality/outcome metrics,
+and a list of flags for anything that would make the numbers misleading. It
+never writes to the run except for `efficiency.md` under `--write`.
+
+Three measurement traps are corrected rather than papered over: the agent
+wall-clock is one shared span (not per-submission, and not model compute time),
+and unmeasured tokens stay labelled as a heuristic rather than being presented
+as cost. Dispatch shape is the one input the program cannot derive — record it
+in `<out>/run-meta.json`. See `references/efficiency-reporting.md`.
 
 Sample runs committed under `code-cup-eval-artifacts/` at the repository root show the shape of a completed evaluation.
 

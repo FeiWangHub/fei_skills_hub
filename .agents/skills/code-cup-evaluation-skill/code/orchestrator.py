@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -311,6 +312,21 @@ def main() -> None:
     scan_parser.add_argument("--no-report", action="store_true")
     add_common(scan_parser)
 
+    # Read-only cost/time reporting for a finished run. Useful for comparing a
+    # Skill-mode run against an Agent-mode run on the same cohort.
+    eff_parser = sub.add_parser(
+        "efficiency",
+        help="Report time, token cost and efficiency ratios for a finished run",
+    )
+    eff_parser.add_argument("--mode", default=None, help="Run mode label, e.g. skill or agent")
+    eff_parser.add_argument("--label", default=None, help="Human label for this run")
+    eff_parser.add_argument("--compare", default=None, help="Another --out to compare against")
+    eff_parser.add_argument("--json", action="store_true", help="Emit JSON instead of markdown")
+    eff_parser.add_argument(
+        "--write", action="store_true", help="Also write efficiency.md into --out"
+    )
+    add_common(eff_parser)
+
     args = parser.parse_args()
 
     if args.command == "prepare":
@@ -349,6 +365,26 @@ def main() -> None:
             report=not args.no_report,
         )
         print(json.dumps(bundle["state"], indent=2))
+        return
+
+    if args.command == "efficiency":
+        from efficiency import collect, compare_runs, render_markdown
+
+        report = collect(args.out, mode=args.mode, label=args.label)
+
+        if args.compare:
+            output = compare_runs(collect(args.compare), report)
+        elif args.json:
+            output = json.dumps(report, indent=2, ensure_ascii=False)
+        else:
+            output = render_markdown(report)
+
+        print(output)
+
+        if args.write:
+            target = Path(args.out) / "efficiency.md"
+            target.write_text(render_markdown(report), encoding="utf-8")
+            print(f"written: {target}", file=sys.stderr)
         return
 
     parser.print_help()

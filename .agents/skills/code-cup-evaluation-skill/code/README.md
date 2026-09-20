@@ -25,23 +25,37 @@ aggregation, and static report rendering.
 | `aggregator.py` | Weighted scoring, median reconciliation, confidence, ranking |
 | `report_generator.py` | Deterministic, escaped, CDN-free HTML reports |
 | `orchestrator.py` | Pipeline entry point |
+| `metrics.py` | Per-stage timing and token accounting |
+| `efficiency.py` | Read-only cost/time/efficiency report for a finished run |
 | `tests/test_gates.py` | Tests for allowlist, classifier, scanner, judge contract |
 | `tests/test_pipeline.py` | Tests for aggregation, egress enforcement, reports |
 | `tests/test_deterministic_scorer.py` | Tests for the deterministic dimensions |
+| `tests/test_metrics.py` | Tests for measured/estimated token labelling |
+| `tests/test_judge_io.py` | Tests for the prepare/merge contract and idempotency |
+| `tests/test_efficiency.py` | Tests for the efficiency report and its guard rails |
 
 ## Quick start
 
 ```bash
 PYTHONPATH=. python3 tests/test_gates.py
 PYTHONPATH=. python3 tests/test_pipeline.py
-PYTHONPATH=. python3 tests/test_deterministic_scorer.py
+for t in test_gates test_pipeline test_deterministic_scorer test_metrics test_judge_io test_efficiency; do
+  PYTHONPATH=. python3 tests/$t.py
+done
 
-PYTHONPATH=. python3 orchestrator.py \
+# Phase 1 — scan and emit judge requests
+PYTHONPATH=. python3 orchestrator.py prepare \
   --manifest ../templates/submission-manifest-template.yaml \
   --allowlist ../templates/allowlist.json \
   --repo-root /path/to/repo-snapshots \
   --out ./out \
   --rubric ../templates/score-rubric.yaml
+
+# Phase 2 — merge the host agent's scores and render reports
+PYTHONPATH=. python3 orchestrator.py merge --out ./out --rubric ../templates/score-rubric.yaml
+
+# Report time and token cost for the finished run
+PYTHONPATH=. python3 orchestrator.py efficiency --out ./out --mode skill --write
 ```
 
 Requires Python 3.9+. `PyYAML` is needed for YAML manifests; a JSON manifest

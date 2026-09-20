@@ -77,3 +77,10 @@ guessed.
 ```
 
 Each report page renders the same per-stage breakdown as a table.
+
+## Retrospective reporting
+
+This module records cost during a run. For reporting it afterwards, and for
+comparing two runs, use `code/efficiency.py` (or `orchestrator.py efficiency`).
+It reads a finished `--out` and never mutates it, and it refuses to present the
+agent phase as more precise than it is. See `references/efficiency-reporting.md`.
