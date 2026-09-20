@@ -145,7 +145,7 @@ record["confidence"] = agent.get("confidence", record.get("confidence", "medium"
 
 `SKILL.md` 的规则是："`low`: judge reported `low`, **or more than two review-severity findings**" —— 后半句在 `merge` 之后完全失效。
 
-**实测证据**（`code-cup-eval-artifacts/codecup-eval-sample/execution-state.json`）：
+**实测证据**（来自一次 `codecup-eval-sample` 运行；该样例运行数据已不再随仓库提交）：
 
 | 提交 | review 级发现数 | 记录中的置信度标签 |
 |---|---|---|
@@ -233,7 +233,7 @@ rubric_version: 'unversioned', prompt_version: 'unversioned', model_version: 'no
 
 但 `SKILL.md` 与 `references/two-phase-workflow.md` 反复强调"there is no separate LLM API to configure, and the pipeline never calls an endpoint on the primary path"，`README.md` 同样如此。
 
-该模块没有任何生产调用方（`orchestrator` 的四个子命令都不引用它）。对于一家 regulated enterprise 的内部工具，保留一个默认拒绝、但确实具备外发能力的模块，会扩大安全评审面。
+该模块没有任何生产调用方（`orchestrator` 的四个子命令都不引用它）。对于一家受监管企业的内部工具，保留一个默认拒绝、但确实具备外发能力的模块，会扩大安全评审面。
 
 **建议**：要么将其明确标记为"未接线 / 参考实现"并在 `IMPLEMENTATION-PLAN.md` §7.2 的"Not yet implemented"表中登记（目前该表未列此项），要么在无实际需求时移除，减少安全评审负担。
 

@@ -27,7 +27,7 @@ both statically generated and published on GitHub Pages (internal GHE).
 
 Three principles drive every decision in this pack:
 
-1. **Deterministic-first.** ≈70% of the score is computed by code with **no LLM** and **no execution** of submission code — spec conformance, security scan, license, trigger-collision, test presence, business-value checklist. The LLM judge only touches the qualitative remainder. Rationale: reproducibility and auditability are non-negotiable for a regulated enterprise.
+1. **Deterministic-first.** ≈70% of the score is computed by code with **no LLM** and **no execution** of submission code — spec conformance, security scan, license, trigger-collision, test presence, business-value checklist. The LLM judge only touches the qualitative remainder. Rationale: reproducibility and auditability are non-negotiable in a regulated enterprise.
 2. **Judge isolation.** Scoring untrusted submissions with an LLM is itself an attack surface (ToxicSkills: 36.8% of public skills vulnerable, 13.4% critical). The judge is sandboxed, has **zero tools**, and **cannot write its own score file**. See `04-security-design.md`.
 3. **Static generation.** Reports are rendered from JSON by trusted plain code — **never** written by an agent. This keeps the LLM's blast radius at a JSON verdict and prevents script injection into the published site.
 

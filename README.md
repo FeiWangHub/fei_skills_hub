@@ -1,14 +1,14 @@
 # Fei Skills Hub
 
-**A centralized, organized repository for AI agent skills designed exclusively for the IT Department of a large enterprise.**
+**A centralized, organized repository of AI agent skills for enterprise engineering teams operating in security-sensitive, restricted environments.**
 
-As a regulated enterprise, strict adherence to security, data privacy, and regulatory compliance is paramount. Every skill in this repository is designed to operate securely within our air-gapped/restricted intranet environment and strictly prohibits external data exfiltration or unauthorized LLM API calls.
+In a regulated enterprise, strict adherence to security, data privacy, and regulatory compliance is paramount. Every skill in this repository is designed to operate securely within an air-gapped/restricted intranet environment and strictly prohibits external data exfiltration or unauthorized LLM API calls.
 
 ---
 
 ## What is This?
 
-This hub provides reusable, tested skills for AI coding assistants that enhance developer productivity across our internal engineering teams. Instead of individuals creating their own workflows, we maintain a shared, curated, and security-approved collection that anyone in the bank can install and use.
+This hub provides reusable, tested skills for AI coding assistants that enhance developer productivity across our internal engineering teams. Instead of individuals creating their own workflows, we maintain a shared, curated, and security-approved collection that anyone in the organization can install and use.
 
 ### What Are Skills?
 

@@ -439,13 +439,13 @@ Examples: `codecup-eval-sample`, `caveman-eval-sample`, `codecup-eval-agent`.
 
 This matters because the two modes are meant to be compared. `efficiency --compare` takes two run directories, and a mode-suffixed name makes the pairing obvious. Name the mode from the **scoring mechanism**, not the model:
 
-- `sample` — a small committed run kept to show the output shape
+- `sample` — a small run kept to show the output shape
 - `agent` — the orchestrator dispatched scorer sub-agents
 - `skill` — the Skill ran inside a single host-agent context, no sub-agents
 
 **Never reuse a directory for a second run of a different cohort.** `prepare` overwrites `execution-state.json`, `judge-requests/`, and the reports in place, and `merge` replaces the judge contribution rather than appending it. Two cohorts sharing one `--out` silently merge into one leaderboard.
 
-Sample runs committed under `code-cup-eval-artifacts/` at the repository root show the shape of a completed evaluation.
+A completed run under `code-cup-eval-artifacts/` at the repository root has the shape below.
 
 #### What lands in the run directory
 

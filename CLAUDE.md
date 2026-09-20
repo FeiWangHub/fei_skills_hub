@@ -9,7 +9,7 @@
 ### Key Facts
 
 - **Purpose:** Centralized, skills library for AI coding assistants
-- **Audience:** IT engineers at a large enterprise (regulated enterprise)
+- **Audience:** IT engineers in security-sensitive, restricted enterprise environments
 - **Security-first:** All skills must be air-gapped/intranet-compatible; no external data exfiltration, no hardcoded credentials
 - **Tool-agnostic:** Works with Claude Code, GitHub Copilot (VS Code / IntelliJ), Gemini CLI, Cursor, Windsurf, OpenCode
 - **License:** MIT
@@ -48,7 +48,6 @@ fei_skills_hub/
 ├── .github/
 │   ├── copilot-instructions.md # GitHub Copilot workspace config
 │   └── workflows/              # CI/CD workflows
-├── code-cup-eval-artifacts/    # Code Cup evaluation runs and presentation artifacts
 ├── docs/                       # Extra documentation (top-100 skills list)
 ├── init-dot-agents.sh          # macOS/Linux initializer script
 ├── init-dot-agents.ps1         # Windows initializer script

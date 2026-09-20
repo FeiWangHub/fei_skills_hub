@@ -116,8 +116,8 @@ directory named `<cohort>-eval-<mode>`:
 orchestrator dispatched scorer sub-agents, `skill` means the Skill ran inside a
 single host-agent context.
 
-Sample completed runs are committed under `code-cup-eval-artifacts/`
-(`codecup-eval-sample`, `caveman-eval-sample`).
+Sample runs can be kept locally under `code-cup-eval-artifacts/` to compare
+output shapes across modes.
 
 Do not reuse one directory for two cohorts — `prepare` overwrites in place and
 `merge` replaces the judge contribution, so a shared `--out` silently merges

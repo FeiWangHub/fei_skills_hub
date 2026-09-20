@@ -1,6 +1,6 @@
 # 04 — Security Design (judge isolation)
 
-**Read this before pointing the pipeline at any real submission.** For a regulated enterprise this design must pass InfoSec review first.
+**Read this before pointing the pipeline at any real submission.** In a regulated enterprise this design must pass InfoSec review first.
 
 ## 1. Threat model
 

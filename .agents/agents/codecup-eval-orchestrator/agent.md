@@ -44,7 +44,7 @@ Run the prepare phase. Do not skip it and do not reimplement it by hand.
 
 | Mode | Meaning |
 |---|---|
-| `sample` | a small committed run kept to show the output shape |
+| `sample` | a small run kept to show the output shape |
 | `agent` | you dispatched scorer sub-agents |
 | `skill` | the Skill ran in a single host-agent context, no sub-agents |
 

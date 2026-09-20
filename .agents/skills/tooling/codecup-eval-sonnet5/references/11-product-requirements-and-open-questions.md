@@ -69,4 +69,4 @@ A large enterprise's internal IT department is running an internal AI hackathon 
 - **Tier 2**: optional dynamic sandboxed-execution score (+30), for top-scoring submissions only.
 - **Band**: the 1-5 qualitative rubric level a dimension is reasoned into before being mapped to a point score.
 - **Auto-Fail vs Warn**: security finding severity tiers — Auto-Fail hard-fails the gate; Warn is informational input to the Security dimension score.
-- **regulated enterprise**: Global Systemically Important Bank — the regulatory category driving this project's strict air-gap/security requirements.
+- **Regulated enterprise**: the operating context driving this project's strict air-gap/security requirements.
