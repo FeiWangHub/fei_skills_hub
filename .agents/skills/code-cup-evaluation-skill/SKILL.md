@@ -422,7 +422,48 @@ and unmeasured tokens stay labelled as a heuristic rather than being presented
 as cost. Dispatch shape is the one input the program cannot derive — record it
 in `<out>/run-meta.json`. See `references/efficiency-reporting.md`.
 
+### Run directory naming
+
+`--out` has no default directory beyond `./out`, so **name it explicitly** and keep every run in one place. The convention is:
+
+```text
+code-cup-eval-artifacts/<cohort>-eval-<mode>/
+```
+
+| Part | Meaning | Examples |
+|---|---|---|
+| `<cohort>` | what was scored | `codecup`, `caveman`, `pptx-skill` |
+| `<mode>` | how it was scored | `sample`, `agent`, `skill` |
+
+Examples: `codecup-eval-sample`, `caveman-eval-sample`, `codecup-eval-agent`.
+
+This matters because the two modes are meant to be compared. `efficiency --compare` takes two run directories, and a mode-suffixed name makes the pairing obvious. Name the mode from the **scoring mechanism**, not the model:
+
+- `sample` — a small committed run kept to show the output shape
+- `agent` — the orchestrator dispatched scorer sub-agents
+- `skill` — the Skill ran inside a single host-agent context, no sub-agents
+
+**Never reuse a directory for a second run of a different cohort.** `prepare` overwrites `execution-state.json`, `judge-requests/`, and the reports in place, and `merge` replaces the judge contribution rather than appending it. Two cohorts sharing one `--out` silently merge into one leaderboard.
+
 Sample runs committed under `code-cup-eval-artifacts/` at the repository root show the shape of a completed evaluation.
+
+#### What lands in the run directory
+
+```text
+code-cup-eval-artifacts/<cohort>-eval-<mode>/
+├── execution-state.json      machine-readable source of truth
+├── judge-scores.json         the host agent's scores (input to merge)
+├── run-meta.json             optional; dispatch shape for the efficiency report
+├── efficiency.md             optional; written by `efficiency --write`
+├── .run-started-at           timestamp used to derive the agent phase
+├── judge-requests/
+│   └── <submission_id>.md    one prompt + evidence bundle per submission
+└── reports/
+    ├── index.html            dashboard, links to each page
+    └── <submission_id>.html  one page per submission
+```
+
+Report file names are derived from `submission_id` by `report_generator.report_filename`, which keeps alphanumerics, `-`, and `_` and replaces everything else with `_`. The dashboard and the per-submission writer share that function, so links cannot drift from file names.
 
 ### What the orchestrator computes without an LLM
 

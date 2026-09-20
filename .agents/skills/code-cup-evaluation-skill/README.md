@@ -102,7 +102,26 @@ PYTHONPATH=. python3 orchestrator.py prepare \
 Then have the host agent write `out/judge-scores.json` and run `merge`. Requires
 Python 3.9+. `PyYAML` is needed for YAML manifests; JSON works without it.
 
-Sample completed runs are committed under `code-cup-eval-artifacts/`.
+### Where a run is written
+
+Every run goes under `code-cup-eval-artifacts/` at the repository root, in a
+directory named `<cohort>-eval-<mode>`:
+
+| Part | Meaning | Examples |
+|---|---|---|
+| `<cohort>` | what was scored | `codecup`, `caveman`, `pptx-skill` |
+| `<mode>` | how it was scored | `sample`, `agent`, `skill` |
+
+`mode` describes the **scoring mechanism**, not the model: `agent` means the
+orchestrator dispatched scorer sub-agents, `skill` means the Skill ran inside a
+single host-agent context.
+
+Sample completed runs are committed under `code-cup-eval-artifacts/`
+(`codecup-eval-sample`, `caveman-eval-sample`).
+
+Do not reuse one directory for two cohorts — `prepare` overwrites in place and
+`merge` replaces the judge contribution, so a shared `--out` silently merges
+both into one leaderboard.
 
 ## Reference documents
 

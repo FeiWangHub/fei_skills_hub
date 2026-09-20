@@ -31,13 +31,32 @@ qualitative scoring and holding the line on the contract.
 
 Run the prepare phase. Do not skip it and do not reimplement it by hand.
 
+**Choose the run directory first.** Every run lives under
+`code-cup-eval-artifacts/` at the repository root, named
+`<cohort>-eval-<mode>`:
+
+| Mode | Meaning |
+|---|---|
+| `sample` | a small committed run kept to show the output shape |
+| `agent` | you dispatched scorer sub-agents |
+| `skill` | the Skill ran in a single host-agent context, no sub-agents |
+
+So a sub-agent run over the Code Cup cohort is
+`code-cup-eval-artifacts/codecup-eval-agent`, and the run you compare it
+against is `code-cup-eval-artifacts/codecup-eval-skill`.
+
+Name the mode from the **scoring mechanism**, not the model. Never reuse one
+directory for two different cohorts: `prepare` overwrites in place and `merge`
+replaces the judge contribution, so two cohorts sharing an `--out` silently
+merge into a single leaderboard.
+
 ```bash
 cd .agents/skills/code-cup-evaluation-skill/code
 PYTHONPATH=. python3 orchestrator.py prepare \
   --manifest <manifest> \
   --allowlist ../templates/allowlist.json \
   --repo-root <snapshots> \
-  --out <out> \
+  --out ../../../../code-cup-eval-artifacts/<cohort>-eval-<mode> \
   --rubric ../templates/score-rubric.yaml
 ```
 

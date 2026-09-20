@@ -27,9 +27,14 @@ PYTHONPATH=. python3 orchestrator.py prepare \
   --manifest ../templates/submission-manifest-template.yaml \
   --allowlist ../templates/allowlist.json \
   --repo-root /path/to/repo-snapshots \
-  --out ./out \
+  --out ../../../../code-cup-eval-artifacts/<cohort>-eval-<mode> \
   --rubric ../templates/score-rubric.yaml
 ```
+
+Run directories are named `<cohort>-eval-<mode>` under
+`code-cup-eval-artifacts/`; see the naming table in `SKILL.md`. `mode` is the
+scoring mechanism (`agent` = scorer sub-agents, `skill` = single host-agent
+context, `sample` = a committed example run).
 
 Writes:
 
